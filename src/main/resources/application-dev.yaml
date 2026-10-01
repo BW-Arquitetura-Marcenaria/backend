@@ -1,8 +1,11 @@
 spring:
+  config:
+    import: optional:file:./.env[.properties]
+
   datasource:
-    url: ${DB_URL:jdbc:mysql://localhost:3306/bw_marcenaria}
-    username: ${DB_USER:bw_user}
-    password: ${DB_PASSWORD:bw_password}
+    url: ${DB_URL:jdbc:mysql://localhost:3306/bw_marcenaria?serverTimezone=UTC}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
