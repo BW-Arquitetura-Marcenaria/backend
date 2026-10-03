@@ -3,7 +3,7 @@ package br.com.bw.backend.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Builder
@@ -28,5 +28,9 @@ public class Rastreabilidade {
     private String origem;
     private String certificacoes;
     @Column(name = "data_registro")
-    private LocalDate dataRegistro;
+    private LocalDateTime dataRegistro;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "projeto_id", nullable = false)
+    private Projeto projeto;
 }
