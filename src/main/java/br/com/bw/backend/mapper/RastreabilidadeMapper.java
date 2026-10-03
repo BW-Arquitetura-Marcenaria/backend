@@ -1,6 +1,7 @@
 package br.com.bw.backend.mapper;
 
 import br.com.bw.backend.dto.request.RastreabilidadePostRequestDTO;
+import br.com.bw.backend.dto.request.RastreabilidadePutRequestDTO;
 import br.com.bw.backend.dto.response.RastreabilidadeGetResponseDTO;
 import br.com.bw.backend.entity.Rastreabilidade;
 import org.mapstruct.Mapper;
@@ -16,4 +17,6 @@ public interface RastreabilidadeMapper {
     }
 
     Rastreabilidade toRastreabilidade(RastreabilidadePostRequestDTO rastreabilidadePostRequestDTO);
+
+    Rastreabilidade toRastreabilidade(RastreabilidadePutRequestDTO rastreabilidadePutRequestDTO);
 }

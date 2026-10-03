@@ -1,6 +1,7 @@
 package br.com.bw.backend.controller;
 
 import br.com.bw.backend.dto.request.RastreabilidadePostRequestDTO;
+import br.com.bw.backend.dto.request.RastreabilidadePutRequestDTO;
 import br.com.bw.backend.dto.response.RastreabilidadeGetResponseDTO;
 import br.com.bw.backend.mapper.RastreabilidadeMapper;
 import br.com.bw.backend.service.RastreabilidadeService;
@@ -40,5 +41,23 @@ public class RastreabilidadeController {
         var response = mapper.toRastreabilidadeGetResponseDTO(rastreabilidadeSaved);
 
         return ResponseEntity.status(201).body(response);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<RastreabilidadeGetResponseDTO> update(
+            @PathVariable Integer id,
+            @RequestBody @Valid RastreabilidadePutRequestDTO rastreabilidadePutRequestDTO
+    ) {
+        var rastreabilidadeUpdated = rastreabilidadeService.update(id, mapper.toRastreabilidade(rastreabilidadePutRequestDTO));
+        var response = mapper.toRastreabilidadeGetResponseDTO(rastreabilidadeUpdated);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Integer id) {
+        rastreabilidadeService.delete(id);
+
+        return ResponseEntity.noContent().build();
     }
 }
