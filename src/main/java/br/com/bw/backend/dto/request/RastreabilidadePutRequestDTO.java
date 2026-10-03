@@ -1,10 +1,9 @@
 package br.com.bw.backend.dto.request;
 
-import br.com.bw.backend.entity.Projeto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 public record RastreabilidadePutRequestDTO(
         @NotBlank
@@ -15,8 +14,8 @@ public record RastreabilidadePutRequestDTO(
         String fornecedor,
         String origem,
         String certificacoes,
-        LocalDateTime dataRegistro,
+        LocalDate dataRegistro,
         @NotNull
-        Projeto projeto
+        Integer projetoId
 ) {
 }
