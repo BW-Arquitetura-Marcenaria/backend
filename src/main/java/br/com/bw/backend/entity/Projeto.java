@@ -4,6 +4,8 @@ import br.com.bw.backend.entity.enums.StatusProjeto;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Entity
 @Builder
 @Getter
@@ -19,7 +21,8 @@ public class Projeto {
     private Integer id;
     @Column(name = "titulo_projeto", length = 150, nullable = false)
     private String tituloProjeto;
-    @Column(name = "valor_total")
-    private Double valorTotal;
+    @Column(name = "valor_total", precision = 10, scale = 2)
+    private BigDecimal valorTotal;
+    @Enumerated(EnumType.STRING)
     private StatusProjeto status;
 }

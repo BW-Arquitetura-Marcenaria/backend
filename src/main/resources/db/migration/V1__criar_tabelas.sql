@@ -37,7 +37,7 @@ CREATE TABLE usuario
                             'Fechado'
                 )
             )
-)
+);
 
 -- =====================================================
 -- Tabela projetos
@@ -65,7 +65,7 @@ CREATE TABLE projetos
             REFERENCES usuario (id)
             ON DELETE CASCADE
             ON UPDATE CASCADE
-)
+);
 
 
 -- =====================================================
@@ -94,7 +94,7 @@ CREATE TABLE calendario_eventos
             REFERENCES projetos (id)
             ON DELETE CASCADE
             ON UPDATE CASCADE
-)
+);
 
 
 -- =====================================================
@@ -113,7 +113,7 @@ CREATE TABLE chatbot_logs
             REFERENCES usuario (id)
             ON DELETE SET NULL
             ON UPDATE CASCADE
-)
+);
 
 
 -- =====================================================
@@ -153,7 +153,7 @@ CREATE TABLE fluxo_financeiro
             REFERENCES projetos (id)
             ON DELETE CASCADE
             ON UPDATE CASCADE
-)
+);
 
 
 -- =====================================================
@@ -175,7 +175,7 @@ CREATE TABLE rastreabilidade_madeira
             REFERENCES projetos (id)
             ON DELETE CASCADE
             ON UPDATE CASCADE
-)
+);
 
 -- =====================================================
 -- Tabela simulacoes_ia
@@ -220,7 +220,7 @@ CREATE TABLE simulacoes_ia
             REFERENCES usuario (id)
             ON DELETE CASCADE
             ON UPDATE CASCADE
-)
+);
 
 -- =====================================================
 -- Tabela tabela_precos_referencia
@@ -232,4 +232,4 @@ CREATE TABLE tabela_precos_referencia
     preco_referencia DECIMAL(10, 2) NOT NULL,
     descricao        TEXT,
     data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-)
+);
