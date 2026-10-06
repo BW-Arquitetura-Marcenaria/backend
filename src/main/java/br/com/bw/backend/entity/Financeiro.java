@@ -7,6 +7,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Builder
@@ -28,7 +29,7 @@ public class Financeiro {
     @Column(nullable = false)
     private BigDecimal valor;
     @Column(name = "data_transacao", nullable = false)
-    private LocalDate dataTransacao;
+    private LocalDateTime dataTransacao;
     @Column(length = 100)
     private String categoria;
     private String descricao;
