@@ -7,6 +7,8 @@ import java.time.LocalDate;
 
 public record RastreabilidadePutRequestDTO(
         @NotBlank
+        Integer id,
+        @NotBlank
         String lote,
         @NotBlank
         String tipoMadeira,

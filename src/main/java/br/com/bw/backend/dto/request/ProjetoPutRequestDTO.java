@@ -8,6 +8,8 @@ import java.math.BigDecimal;
 
 public record ProjetoPutRequestDTO(
         @NotBlank
+        Integer id,
+        @NotBlank
         String tituloProjeto,
         @PositiveOrZero
         BigDecimal valorTotal,
