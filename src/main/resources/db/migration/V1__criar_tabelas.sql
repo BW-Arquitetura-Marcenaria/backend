@@ -1,10 +1,9 @@
 -- =====================================================
 -- Banco de dados
 -- =====================================================
-CREATE
-DATABASE IF NOT EXISTS bw_marcenaria;
+CREATE DATABASE IF NOT EXISTS bwMarcenaria;
 
-USE bw_marcenaria;
+USE bwMarcenaria;
 
 -- =====================================================
 -- Tabela usuario

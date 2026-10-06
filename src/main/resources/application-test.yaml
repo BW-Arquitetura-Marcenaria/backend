@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: ${TEST_DB_URL:jdbc:mysql://localhost:3307/bw_marcenaria_test}
+    url: ${TEST_DB_URL:jdbc:mysql://localhost:3307/bwMarcenariaTest}
     username: ${TEST_DB_USER:bw_test}
     password: ${TEST_DB_PASSWORD:bw_test}
     driver-class-name: com.mysql.cj.jdbc.Driver
