@@ -1,0 +1,24 @@
+package br.com.bw.backend.dto.request;
+
+import br.com.bw.backend.entity.enums.TipoEvento;
+import jakarta.validation.constraints.FutureOrPresent;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PastOrPresent;
+
+import java.time.LocalDateTime;
+
+public record CalendarioPutRequestDTO(
+        @NotNull
+        Integer id,
+        @NotBlank
+        TipoEvento tipoEvento,
+        @NotBlank
+        @PastOrPresent
+        LocalDateTime dataInicio,
+        @NotBlank
+        @FutureOrPresent
+        LocalDateTime dataFim,
+        String observacoes
+) {
+}
