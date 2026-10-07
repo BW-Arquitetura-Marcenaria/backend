@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public record FinanceiroPutRequestDTO(
-        @NotBlank
+        @NotNull
         Integer id,
         @NotBlank
         @Length(min = 0, max = 10)
