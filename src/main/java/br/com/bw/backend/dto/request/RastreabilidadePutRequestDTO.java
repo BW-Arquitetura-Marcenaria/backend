@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 
 public record RastreabilidadePutRequestDTO(
-        @NotBlank
+        @NotNull
         Integer id,
         @NotBlank
         String lote,
