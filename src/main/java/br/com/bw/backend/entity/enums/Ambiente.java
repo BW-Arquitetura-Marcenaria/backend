@@ -6,5 +6,5 @@ public enum Ambiente {
     SALA,
     BANHEIRO,
     ESCRITORIO,
-    LOJA
+    OUTRO
 }
