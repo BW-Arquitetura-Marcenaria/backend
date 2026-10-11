@@ -1,4 +1,4 @@
-package br.com.bw.backend.converter;
+package br.com.bw.backend.entity.converter;
 
 import br.com.bw.backend.entity.enums.EtapaFunil;
 import jakarta.persistence.AttributeConverter;
