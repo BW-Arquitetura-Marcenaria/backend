@@ -1,6 +1,7 @@
 package br.com.bw.backend.controller;
 
 import br.com.bw.backend.dto.request.ReferenciaPostRequestDTO;
+import br.com.bw.backend.dto.request.ReferenciaPutRequestDTO;
 import br.com.bw.backend.dto.response.ReferenciaGetResponseDTO;
 import br.com.bw.backend.mapper.ReferenciaMapper;
 import br.com.bw.backend.service.ReferenciaService;
@@ -36,5 +37,13 @@ public class ReferenciaController {
         var referenciaSave = referenciaService.save(referencia);
 
         return ResponseEntity.status(201).body(mapper.toReferenciaGetResponseDTO(referenciaSave));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ReferenciaGetResponseDTO> updateById(@PathVariable Integer id, @RequestBody ReferenciaPutRequestDTO referenciaPutRequestDTO) {
+        var referencia = mapper.toReferencia(referenciaPutRequestDTO);
+        var referenciaUpdated = referenciaService.updateById(id, referencia);
+
+        return ResponseEntity.ok(mapper.toReferenciaGetResponseDTO(referenciaUpdated));
     }
 }
