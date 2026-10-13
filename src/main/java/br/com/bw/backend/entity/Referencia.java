@@ -1,5 +1,7 @@
 package br.com.bw.backend.entity;
 
+import br.com.bw.backend.entity.enums.CategoriaReferencia;
+import br.com.bw.backend.entity.enums.UnidadeReferencia;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -19,11 +21,18 @@ public class Referencia {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
     private Integer id;
-    @Column(name = "item_servico", nullable = false, length = 150)
-    private String itemService;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private CategoriaReferencia categoria;
     @Column(name = "preco_referencia", nullable = false)
     private BigDecimal precoReferencia;
+    @Column(nullable = false)
     private String descricao;
+    @Column(name = "material_base", nullable = false, length = 150)
+    private String materialBase;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private UnidadeReferencia unidade;
     @Column(name = "data_atualizacao")
     private LocalDateTime dataAtualizacao;
 }

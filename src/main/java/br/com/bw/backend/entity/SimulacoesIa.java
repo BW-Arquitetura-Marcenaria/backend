@@ -22,7 +22,9 @@ public class SimulacoesIa {
     private Integer id;
     @Column(name = "descricao_prompt", nullable = false)
     private String descricaoPrompt;
+    @Enumerated(EnumType.STRING)
     private Ambiente ambiente;
+    @Enumerated(EnumType.STRING)
     @Column(name = "estilo_desejado", nullable = false)
     private EstiloDesejado estiloDesejado;
     private String acabamento;
