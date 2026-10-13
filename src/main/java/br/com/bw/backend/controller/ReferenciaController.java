@@ -5,6 +5,7 @@ import br.com.bw.backend.dto.request.ReferenciaPutRequestDTO;
 import br.com.bw.backend.dto.response.ReferenciaGetResponseDTO;
 import br.com.bw.backend.mapper.ReferenciaMapper;
 import br.com.bw.backend.service.ReferenciaService;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -32,7 +33,7 @@ public class ReferenciaController {
     }
 
     @PostMapping()
-    public ResponseEntity<ReferenciaGetResponseDTO> save(@RequestBody ReferenciaPostRequestDTO referenciaPostRequestDTO) {
+    public ResponseEntity<ReferenciaGetResponseDTO> save(@RequestBody @Valid ReferenciaPostRequestDTO referenciaPostRequestDTO) {
         var referencia = mapper.toReferencia(referenciaPostRequestDTO);
         var referenciaSave = referenciaService.save(referencia);
 
@@ -40,7 +41,7 @@ public class ReferenciaController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ReferenciaGetResponseDTO> updateById(@PathVariable Integer id, @RequestBody ReferenciaPutRequestDTO referenciaPutRequestDTO) {
+    public ResponseEntity<ReferenciaGetResponseDTO> updateById(@PathVariable Integer id, @RequestBody @Valid ReferenciaPutRequestDTO referenciaPutRequestDTO) {
         var referencia = mapper.toReferencia(referenciaPutRequestDTO);
         var referenciaUpdated = referenciaService.updateById(id, referencia);
 

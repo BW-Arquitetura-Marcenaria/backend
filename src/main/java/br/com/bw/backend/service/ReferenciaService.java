@@ -1,13 +1,12 @@
 package br.com.bw.backend.service;
 
 import br.com.bw.backend.entity.Referencia;
+import br.com.bw.backend.exception.NotFoundException;
 import br.com.bw.backend.repository.ReferenciaRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 
@@ -31,7 +30,7 @@ public class ReferenciaService {
     @Transactional
     public Referencia updateById(Integer id, Referencia referencia) {
         var atual = referenciaRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Referência não encontrada"));
+                .orElseThrow(() -> new NotFoundException("Referência não encontrada"));
 
         atual.setCategoria(referencia.getCategoria());
         atual.setPrecoReferencia(referencia.getPrecoReferencia());
@@ -46,7 +45,7 @@ public class ReferenciaService {
     @Transactional
     public void deleteById(Integer id) {
         referenciaRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Referência não encontrada"));
+                .orElseThrow(() -> new NotFoundException("Referência não encontrada"));
 
         referenciaRepository.deleteById(id);
     }
