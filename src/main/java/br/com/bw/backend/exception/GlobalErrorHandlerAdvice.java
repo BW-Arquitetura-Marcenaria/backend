@@ -2,6 +2,7 @@ package br.com.bw.backend.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
@@ -47,6 +48,25 @@ public class GlobalErrorHandlerAdvice {
                 e.getMessage(),
                 request.getDescription(false).replace("uri=", ""),
                 null
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiErrorResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException e, WebRequest request) {
+
+        var detalhes = e.getBindingResult().getFieldErrors().stream()
+                .map(f -> f.getField() + ": " + f.getDefaultMessage())
+                .toList();
+
+        var error = new ApiErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                "Erro de validação",
+                request.getDescription(false).replace("uri=", ""),
+                detalhes
         );
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
