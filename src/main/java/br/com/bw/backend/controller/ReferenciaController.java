@@ -32,7 +32,7 @@ public class ReferenciaController {
     }
 
     @PostMapping()
-    public ResponseEntity<ReferenciaGetResponseDTO> save(@RequestBody ReferenciaPostRequestDTO referenciaPostRequestDTO){
+    public ResponseEntity<ReferenciaGetResponseDTO> save(@RequestBody ReferenciaPostRequestDTO referenciaPostRequestDTO) {
         var referencia = mapper.toReferencia(referenciaPostRequestDTO);
         var referenciaSave = referenciaService.save(referencia);
 
@@ -45,5 +45,11 @@ public class ReferenciaController {
         var referenciaUpdated = referenciaService.updateById(id, referencia);
 
         return ResponseEntity.ok(mapper.toReferenciaGetResponseDTO(referenciaUpdated));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteById(@PathVariable Integer id) {
+        referenciaService.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 }

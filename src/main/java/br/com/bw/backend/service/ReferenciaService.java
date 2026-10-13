@@ -42,4 +42,12 @@ public class ReferenciaService {
 
         return referenciaRepository.save(atual);
     }
+
+    @Transactional
+    public void deleteById(Integer id) {
+        referenciaRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Referência não encontrada"));
+
+        referenciaRepository.deleteById(id);
+    }
 }
