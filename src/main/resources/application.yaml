@@ -13,6 +13,13 @@ spring:
 server:
   port: ${SERVER_PORT:8080}
 
+logging:
+  level:
+    root: INFO
+    br.com.bw.backend: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} %-5level [%thread] %logger{36} - %msg%n"
+
 springdoc:
   api-docs:
     path: /v3/api-docs
