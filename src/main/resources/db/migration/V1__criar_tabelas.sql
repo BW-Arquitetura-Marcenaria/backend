@@ -4,7 +4,8 @@
 CREATE
 DATABASE IF NOT EXISTS bw_marcenaria;
 
-USE bw_marcenaria;
+USE
+bw_marcenaria;
 
 -- =====================================================
 -- Tabela usuario
@@ -228,8 +229,29 @@ CREATE TABLE simulacoes_ia
 CREATE TABLE tabela_precos_referencia
 (
     id               INT AUTO_INCREMENT PRIMARY KEY,
-    item_servico     VARCHAR(150)   NOT NULL,
+    categoria        VARCHAR(30)    NOT NULL,
     preco_referencia DECIMAL(10, 2) NOT NULL,
     descricao        TEXT,
+    material_base    VARCHAR(150)   NOT NULL,
+    unidade          VARCHAR(20)    NOT NULL,
     data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+
+    CONSTRAINT chk_categoria
+        CHECK (
+            categoria IN (
+                'Marcenaria Planejada',
+                'Dormitorio e Closet',
+                'Mao de Obra'
+            )
+        ),
+
+    CONSTRAINT chk_unidade
+        CHECK (
+            unidade IN (
+                'Unidade',
+                'Metro Quadrado',
+                'Metro Linear',
+                'Hora'
+            )
+        )
 );

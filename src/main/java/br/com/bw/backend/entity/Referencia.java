@@ -20,7 +20,7 @@ public class Referencia {
     @EqualsAndHashCode.Include
     private Integer id;
     @Column(name = "item_servico", nullable = false, length = 150)
-    private String itemService;
+    private String itemServico;
     @Column(name = "preco_referencia", nullable = false)
     private BigDecimal precoReferencia;
     private String descricao;
