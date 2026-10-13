@@ -23,8 +23,6 @@ public record ReferenciaPostRequestDTO(
         @Length(min = 0, max = 150)
         String materialBase,
         @NotNull
-        UnidadeReferencia unidade,
-        @PastOrPresent
-        LocalDateTime dataAtualizacao
+        UnidadeReferencia unidade
 ) {
 }

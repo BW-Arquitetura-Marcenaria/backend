@@ -17,4 +17,8 @@ public class ReferenciaService {
     public Page<Referencia> listAll(Pageable pageable) {
         return referenciaRepository.findAll(pageable);
     }
+
+    public Referencia save(Referencia referencia) {
+        return referenciaRepository.save(referencia);
+    }
 }
