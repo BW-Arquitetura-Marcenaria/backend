@@ -1,12 +1,13 @@
 package br.com.bw.backend.service;
 
+import br.com.bw.backend.repository.CalendarioRepository;
 import org.springframework.stereotype.Service;
 
 @Service
 public class CalendarioService {
-    private final CalendarioService calendarioService;
+    private final CalendarioRepository calendarioRepository;
 
-    public CalendarioService(CalendarioService calendarioService) {
-        this.calendarioService = calendarioService;
+    public CalendarioService(CalendarioRepository calendarioRepository) {
+        this.calendarioRepository = calendarioRepository;
     }
 }

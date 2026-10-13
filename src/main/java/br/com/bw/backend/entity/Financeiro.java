@@ -24,6 +24,7 @@ public class Financeiro {
     private Integer id;
 
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "tipo_transacao", nullable = false, length = 10)
     private TipoTransacao tipoTransacao;
     @Column(nullable = false)
@@ -33,6 +34,7 @@ public class Financeiro {
     @Column(length = 100)
     private String categoria;
     private String descricao;
+    @Enumerated(EnumType.STRING)
     @Column(length = 20)
     private StatusTransacao status;
 
