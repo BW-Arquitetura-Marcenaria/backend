@@ -2,19 +2,23 @@ package br.com.bw.backend.entity;
 
 import br.com.bw.backend.entity.enums.OrigemChat;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "chatbot_logs")
+@Builder
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@Table(name = "chatbot_logs")
 public class ChatbotLog {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
