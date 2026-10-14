@@ -52,10 +52,10 @@ CREATE TABLE projetos
     CONSTRAINT chk_projetos_status
         CHECK (
             status IN (
-                       'Planejamento',
-                       'Em Execucao',
-                       'Concluido',
-                       'Cancelado'
+                       'PLANEJAMENTO',
+                       'EM_EXECUCAO',
+                       'CONCLUIDO',
+                       'CANCELADO'
                 )
             ),
 
@@ -82,9 +82,9 @@ CREATE TABLE calendario_eventos
     CONSTRAINT chk_calendario_tipo_evento
         CHECK (
             tipo_evento IN (
-                            'Entrega',
-                            'Montagem',
-                            'Visita'
+                            'ENTREGA',
+                            'MONTAGEM',
+                            'VISITA'
                 )
             ),
 
@@ -124,7 +124,7 @@ CREATE TABLE fluxo_financeiro
     projeto_id     INT            NOT NULL,
     tipo_transacao VARCHAR(10)    NOT NULL,
     valor          DECIMAL(10, 2) NOT NULL,
-    data_transacao DATE           NOT NULL,
+    data_transacao DATETIME       NOT NULL,
     categoria      VARCHAR(100),
     descricao      TEXT,
     status         VARCHAR(20) DEFAULT 'Pendente',
@@ -132,18 +132,18 @@ CREATE TABLE fluxo_financeiro
     CONSTRAINT chk_financeiro_tipo
         CHECK (
             tipo_transacao IN (
-                               'Receita',
-                               'Despesa'
+                               'RECEITA',
+                               'DESPESA'
                 )
             ),
 
     CONSTRAINT chk_financeiro_status
         CHECK (
             status IN (
-                       'Pendente',
-                       'Pago',
-                       'Atrasado',
-                       'Cancelado'
+                       'PENDENTE',
+                       'PAGO',
+                       'ATRASADO',
+                       'CANCELADO'
                 )
             ),
 
@@ -193,24 +193,24 @@ CREATE TABLE simulacoes_ia
     CONSTRAINT chk_simulacoes_ambiente
         CHECK (
             ambiente IN (
-                         'Cozinha',
-                         'Quarto',
-                         'Sala',
-                         'Banheiro',
-                         'Escritorio',
-                         'Outro'
+                         'COZINHA',
+                         'QUARTO',
+                         'SALA',
+                         'BANHEIRO',
+                         'ESCRITORIO',
+                         'OUTRO'
                 )
             ),
 
     CONSTRAINT chk_simulacoes_estilo
         CHECK (
             estilo_desejado IN (
-                                'Moderno',
-                                'Rustico',
-                                'Minimalista',
-                                'Industrial',
-                                'Classico',
-                                'Outro'
+                                'MODERNO',
+                                'RUSTICO',
+                                'MINIMALISTA',
+                                'INDUSTRIAL',
+                                'CLASSICO',
+                                'OUTRO'
                 )
             ),
 
@@ -227,8 +227,29 @@ CREATE TABLE simulacoes_ia
 CREATE TABLE tabela_precos_referencia
 (
     id               INT AUTO_INCREMENT PRIMARY KEY,
-    item_servico     VARCHAR(150)   NOT NULL,
+    categoria        VARCHAR(30)    NOT NULL,
     preco_referencia DECIMAL(10, 2) NOT NULL,
     descricao        TEXT,
-    data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    material_base    VARCHAR(150)   NOT NULL,
+    unidade          VARCHAR(20)    NOT NULL,
+    data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT chk_categoria
+        CHECK (
+            categoria IN (
+                'MARCENARIA_PLANEJADA',
+                'DORMITORIO_E_CLOSSET',
+                'MAO_DE_OBRA'
+            )
+        ),
+
+    CONSTRAINT chk_unidade
+        CHECK (
+            unidade IN (
+                'UNIDADE',
+                'METRO_QUADRADO',
+                'METRO_LINEAR',
+                'HORA'
+            )
+        )
 );
