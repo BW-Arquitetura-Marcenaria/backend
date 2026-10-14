@@ -8,9 +8,9 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "chatbot_logs")
 @Getter
 @Setter
+@Table(name = "chatbot_logs")
 public class ChatbotLog {
 
     @Id
