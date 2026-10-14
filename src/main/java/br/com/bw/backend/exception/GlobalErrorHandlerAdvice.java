@@ -85,4 +85,22 @@ public class GlobalErrorHandlerAdvice {
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
+
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<ApiErrorResponse> handleUnauthorizedException(UnauthorizedException e, WebRequest request) {
+        var path = request.getDescription(false).replace("uri=", "");
+        log.warn("Erro de validação de acesso - path: {}, message: {}", path, e.getMessage());
+
+        var error = new ApiErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.UNAUTHORIZED.value(),
+                HttpStatus.UNAUTHORIZED.getReasonPhrase(),
+                e.getMessage(),
+                path,
+                null
+        );
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+    }
+
 }
