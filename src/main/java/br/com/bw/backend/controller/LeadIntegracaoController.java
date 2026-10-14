@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/integracoes/leads")
+@RequestMapping("v1/api/integracoes/leads")
 @RequiredArgsConstructor
 public class LeadIntegracaoController {
 
