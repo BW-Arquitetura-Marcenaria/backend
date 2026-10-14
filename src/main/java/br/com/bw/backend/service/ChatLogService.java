@@ -6,10 +6,12 @@ import br.com.bw.backend.entity.enums.OrigemChat;
 import br.com.bw.backend.repository.ChatbotLogRepository;
 import br.com.bw.backend.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class ChatLogService {
 
@@ -20,14 +22,15 @@ public class ChatLogService {
     public void registrarInstagram(ChatLogPostRequestDTO dto) {
         String instagramId = dto.instagramId().trim();
 
-        ChatbotLog log = new ChatbotLog();
-        log.setInstagramId(instagramId);
-        log.setOrigem(OrigemChat.INSTAGRAM);
-        log.setMensagemUsuario(dto.mensagemUsuario());
-        log.setRespostaIa(dto.respostaIa());
+        ChatbotLog chatbotLog = new ChatbotLog();
+        chatbotLog.setInstagramId(instagramId);
+        chatbotLog.setOrigem(OrigemChat.INSTAGRAM);
+        chatbotLog.setMensagemUsuario(dto.mensagemUsuario());
+        chatbotLog.setRespostaIa(dto.respostaIa());
 
-        usuarioRepository.findByInstagramId(instagramId).ifPresent(log::setCliente);
+        usuarioRepository.findByInstagramId(instagramId).ifPresent(chatbotLog::setCliente);
 
-        chatbotLogRepository.save(log);
+        chatbotLogRepository.save(chatbotLog);
+        log.info("Log de chat registrado com sucesso - instagramId: {}", instagramId);
     }
 }
