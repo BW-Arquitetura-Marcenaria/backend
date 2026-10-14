@@ -21,7 +21,6 @@ public class Referencia {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
     private Integer id;
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private CategoriaReferencia categoria;
     @Column(name = "preco_referencia", nullable = false)
@@ -30,7 +29,6 @@ public class Referencia {
     private String descricao;
     @Column(name = "material_base", nullable = false, length = 150)
     private String materialBase;
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private UnidadeReferencia unidade;
     @Column(name = "data_atualizacao")
