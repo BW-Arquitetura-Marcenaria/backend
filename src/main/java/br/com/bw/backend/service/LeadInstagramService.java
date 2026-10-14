@@ -6,6 +6,7 @@ import br.com.bw.backend.entity.LeadInstagram;
 import br.com.bw.backend.repository.LeadInstagramRepository;
 import br.com.bw.backend.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class LeadInstagramService {
 
@@ -29,6 +31,7 @@ public class LeadInstagramService {
     @Transactional
     public LeadInstagramPostResponseDTO registrar(LeadInstagramPostRequestDTO dto) {
         if (usuarioRepository.existsByInstagramId(dto.instagramId())) {
+            log.info("Lead já cadastrado como usuário - instagramId: {}", dto.instagramId());
             return new LeadInstagramPostResponseDTO(true, false, null);
         }
 
@@ -49,6 +52,7 @@ public class LeadInstagramService {
 
         if (tokenValido) {
             leadRepository.save(lead);
+            log.info("Lead atualizado com token ainda válido - instagramId: {}", dto.instagramId());
             return new LeadInstagramPostResponseDTO(false, true, null);
         }
 
@@ -59,6 +63,7 @@ public class LeadInstagramService {
         lead.setLinkEnviadoEm(agora);
         leadRepository.save(lead);
 
+        log.info("Novo link de cadastro gerado para lead - instagramId: {}", dto.instagramId());
         return new LeadInstagramPostResponseDTO(false, false, baseUrl + "/cadastro?token=" + token);
     }
 
