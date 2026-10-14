@@ -3,6 +3,7 @@ package br.com.bw.backend.service;
 import br.com.bw.backend.entity.Referencia;
 import br.com.bw.backend.exception.NotFoundException;
 import br.com.bw.backend.repository.ReferenciaRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,12 +14,9 @@ import java.time.LocalDateTime;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class ReferenciaService {
     private final ReferenciaRepository referenciaRepository;
-
-    public ReferenciaService(ReferenciaRepository referenciaRepository) {
-        this.referenciaRepository = referenciaRepository;
-    }
 
     public Page<Referencia> listAll(Pageable pageable) {
         log.info("Listando referências de preços - página: {}, tamanho: {}", pageable.getPageNumber(), pageable.getPageSize());

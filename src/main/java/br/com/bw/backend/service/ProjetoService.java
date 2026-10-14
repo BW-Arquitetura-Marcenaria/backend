@@ -4,19 +4,17 @@ import br.com.bw.backend.entity.Projeto;
 import br.com.bw.backend.entity.enums.StatusProjeto;
 import br.com.bw.backend.exception.NotFoundException;
 import br.com.bw.backend.repository.ProjetoRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-@Slf4j
 @Service
+@Slf4j
+@RequiredArgsConstructor
 public class ProjetoService {
     private final ProjetoRepository projetoRepository;
-
-    public ProjetoService(ProjetoRepository projetoRepository) {
-        this.projetoRepository = projetoRepository;
-    }
 
     public Page<Projeto> findAll(Pageable pageable) {
         log.info("Listando projetos - página: {}, tamanho: {}", pageable.getPageNumber(), pageable.getPageSize());
