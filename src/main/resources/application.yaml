@@ -26,3 +26,13 @@ springdoc:
 
   swagger-ui:
     path: /swagger-ui.html
+
+app:
+  integracao:
+    api-key: ${INTEGRACAO_API_KEY}
+  cadastro:
+    base-url: ${APP_BASE_URL:http://localhost:3000}
+    token-validade-horas: 48
+  jwt:
+    secret: ${JWT_SECRET}
+    expiracao-minutos: 30
