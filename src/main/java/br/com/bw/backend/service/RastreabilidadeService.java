@@ -5,6 +5,7 @@ import br.com.bw.backend.exception.BusinessValidationException;
 import br.com.bw.backend.exception.NotFoundException;
 import br.com.bw.backend.repository.ProjetoRepository;
 import br.com.bw.backend.repository.RastreabilidadeRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,14 +14,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class RastreabilidadeService {
     private final RastreabilidadeRepository rastreabilidadeRepository;
     private final ProjetoRepository projetoRepository;
-
-    public RastreabilidadeService(RastreabilidadeRepository rastreabilidadeRepository, ProjetoRepository projetoRepository) {
-        this.rastreabilidadeRepository = rastreabilidadeRepository;
-        this.projetoRepository = projetoRepository;
-    }
 
     public Page<Rastreabilidade> findAll(Pageable pageable) {
         log.info("Listando rastreabilidade - página: {}, tamanho: {}", pageable.getPageNumber(), pageable.getPageSize());

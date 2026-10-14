@@ -3,13 +3,12 @@ package br.com.bw.backend.service;
 import br.com.bw.backend.dto.request.LoginPostRequestDTO;
 import br.com.bw.backend.dto.response.AuthGetResponseDTO;
 import br.com.bw.backend.entity.Usuario;
+import br.com.bw.backend.exception.UnauthorizedException;
 import br.com.bw.backend.repository.UsuarioRepository;
 import br.com.bw.backend.security.JwtService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
@@ -29,7 +28,7 @@ public class AuthService {
         boolean senhaOk = passwordEncoder.matches(dto.senha(), hash);
 
         if (usuario == null || !senhaOk || !Boolean.TRUE.equals(usuario.getAtivo())) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, MENSAGEM_ERRO);
+            throw new UnauthorizedException(MENSAGEM_ERRO);
         }
 
         String token = jwtService.gerar(usuario.getId(), usuario.getEmail());

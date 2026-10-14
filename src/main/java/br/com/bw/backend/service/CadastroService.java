@@ -7,6 +7,8 @@ import br.com.bw.backend.entity.LeadInstagram;
 import br.com.bw.backend.entity.Usuario;
 import br.com.bw.backend.entity.enums.EtapaFunil;
 import br.com.bw.backend.entity.enums.TipoCliente;
+import br.com.bw.backend.exception.BusinessValidationException;
+import br.com.bw.backend.exception.ConflictException;
 import br.com.bw.backend.mapper.CadastroMapper;
 import br.com.bw.backend.repository.ChatbotLogRepository;
 import br.com.bw.backend.repository.LeadInstagramRepository;
@@ -43,16 +45,16 @@ public class CadastroService {
         String email = dto.email().trim().toLowerCase();
 
         if (usuarioRepository.existsByEmail(email)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "E-mail já cadastrado");
+            throw new ConflictException("E-mail já cadastrado");
         }
         if (usuarioRepository.existsByInstagramId(lead.getInstagramId())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Conta já cadastrada");
+            throw new ConflictException("Conta já cadastrada");
         }
         if (dto.tipoCliente() == TipoCliente.PESSOA_FISICA && vazio(dto.cpf())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "CPF é obrigatório");
+            throw new BusinessValidationException("CPF é obrigatório");
         }
         if (dto.tipoCliente() == TipoCliente.PESSOA_JURIDICA && vazio(dto.cnpj())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "CNPJ é obrigatório");
+            throw new BusinessValidationException("CNPJ é obrigatório");
         }
 
         Usuario usuario = mapper.toEntity(dto);
