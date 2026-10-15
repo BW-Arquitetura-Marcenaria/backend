@@ -4,6 +4,8 @@ import br.com.bw.backend.entity.Projeto;
 import br.com.bw.backend.entity.enums.StatusProjeto;
 import br.com.bw.backend.exception.NotFoundException;
 import br.com.bw.backend.repository.ProjetoRepository;
+import br.com.bw.backend.repository.UsuarioRepository;
+import br.com.bw.backend.security.UsuarioLogado;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -15,21 +17,31 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class ProjetoService {
     private final ProjetoRepository projetoRepository;
+    private final UsuarioRepository usuarioRepository;
 
     public Page<Projeto> findAll(Pageable pageable) {
         log.info("Listando projetos - página: {}, tamanho: {}", pageable.getPageNumber(), pageable.getPageSize());
-        return projetoRepository.findAll(pageable);
+        if (UsuarioLogado.isAdmin()) {
+            return projetoRepository.findAll(pageable);
+        }
+        return projetoRepository.findByClienteId(UsuarioLogado.id(), pageable);
     }
 
     public Projeto findById(Integer id) {
-        return projetoRepository.findById(id)
-                .orElseThrow(() -> {
-                    log.warn("Projeto não encontrado - id: {}", id);
-                    return new NotFoundException("Projeto não encontrado");
-                });
+        var projeto = UsuarioLogado.isAdmin()
+                ? projetoRepository.findById(id)
+                : projetoRepository.findByIdAndClienteId(id, UsuarioLogado.id());
+
+        return projeto.orElseThrow(() ->
+                new NotFoundException("Projeto não encontrado"));
     }
 
-    public Projeto save(Projeto projeto) {
+    public Projeto save(Projeto projeto, Integer clienteId) {
+        var cliente = usuarioRepository.findById(clienteId)
+                .orElseThrow(() -> new NotFoundException("Cliente não encontrado"));
+
+        projeto.setCliente(cliente);
+
         if (projeto.getStatus() == null) {
             projeto.setStatus(StatusProjeto.PLANEJAMENTO);
         }
@@ -49,20 +61,17 @@ public class ProjetoService {
         }
 
         projeto.setId(projetoExistente.getId());
-        var projetoAtualizado = projetoRepository.save(projeto);
-        log.info("Projeto atualizado com sucesso - id: {}", projetoAtualizado.getId());
-        return projetoAtualizado;
+
+        projeto.setCliente(projetoExistente.getCliente());
+
+        return projetoRepository.save(projeto);
     }
 
     public void delete(Integer id) {
         log.info("Removendo projeto - id: {}", id);
 
-        if (!projetoRepository.existsById(id)) {
-            log.warn("Projeto não encontrado para remoção - id: {}", id);
-            throw new NotFoundException("Projeto não encontrado");
-        }
-
-        projetoRepository.deleteById(id);
+        var projeto = findById(id);
+        projetoRepository.delete(projeto);
         log.info("Projeto removido com sucesso - id: {}", id);
     }
 }

@@ -1,6 +1,7 @@
 package br.com.bw.backend.entity;
 
 import br.com.bw.backend.entity.enums.EtapaFunil;
+import br.com.bw.backend.entity.enums.Perfil;
 import br.com.bw.backend.entity.enums.TipoCliente;
 import jakarta.persistence.*;
 import lombok.*;
@@ -65,4 +66,9 @@ public class Usuario {
     @Builder.Default
     @Column(nullable = false)
     private Boolean ativo = true;
+
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private Perfil perfil = Perfil.CLIENTE;
 }

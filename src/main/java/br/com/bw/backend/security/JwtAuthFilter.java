@@ -36,11 +36,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
             String token = header.substring(PREFIXO.length()).trim();
 
-            jwtService.validar(token).ifPresent(usuarioId -> {
+            jwtService.validar(token).ifPresent(payload -> {
                 var autenticacao = new UsernamePasswordAuthenticationToken(
-                        usuarioId,
+                        payload.usuarioId(),
                         null,
-                        List.of(new SimpleGrantedAuthority("ROLE_USUARIO")));
+                        List.of(new SimpleGrantedAuthority("ROLE_" + payload.perfil().name())));
                 SecurityContextHolder.getContext().setAuthentication(autenticacao);
             });
         }

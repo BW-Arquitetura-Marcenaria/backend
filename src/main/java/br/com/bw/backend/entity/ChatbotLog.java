@@ -1,6 +1,5 @@
 package br.com.bw.backend.entity;
 
-import br.com.bw.backend.entity.enums.OrigemChat;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -27,10 +26,6 @@ public class ChatbotLog {
 
     @Column(name = "instagram_id", length = 40)
     private String instagramId;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
-    private OrigemChat origem = OrigemChat.INSTAGRAM;
 
     @Column(name = "mensagem_usuario", nullable = false, columnDefinition = "TEXT")
     private String mensagemUsuario;

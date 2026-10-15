@@ -37,7 +37,7 @@ public class AuthService {
             throw new UnauthorizedException(MENSAGEM_ERRO);
         }
 
-        String token = jwtService.gerar(usuario.getId(), usuario.getEmail());
+        String token = jwtService.gerar(usuario.getId(), usuario.getEmail(), usuario.getPerfil());
         log.info("Login realizado com sucesso - id: {}", usuario.getId());
 
         return new AuthGetResponseDTO(

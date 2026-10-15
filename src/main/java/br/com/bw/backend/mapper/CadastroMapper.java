@@ -21,5 +21,6 @@ public interface CadastroMapper {
     @Mapping(target = "instagramId", ignore = true)
     @Mapping(target = "senhaHash", ignore = true)
     @Mapping(target = "ativo", ignore = true)
+    @Mapping(target = "perfil", ignore = true)
     Usuario toEntity(CadastroPostRequestDTO dto);
 }
