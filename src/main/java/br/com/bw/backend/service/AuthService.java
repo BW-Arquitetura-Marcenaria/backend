@@ -32,7 +32,7 @@ public class AuthService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, MENSAGEM_ERRO);
         }
 
-        String token = jwtService.gerar(usuario.getId(), usuario.getEmail());
+        String token = jwtService.gerar(usuario.getId(), usuario.getEmail(), usuario.getPerfil());
 
         return new AuthGetResponseDTO(
                 token,
