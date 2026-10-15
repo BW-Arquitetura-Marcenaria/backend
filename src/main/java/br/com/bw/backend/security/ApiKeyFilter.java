@@ -26,7 +26,7 @@ public class ApiKeyFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return !request.getRequestURI().startsWith("/api/integracoes/");
+        return !request.getRequestURI().startsWith("/v1/api/integracoes/");
     }
 
     @Override
