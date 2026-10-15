@@ -2,7 +2,6 @@ package br.com.bw.backend.service;
 
 import br.com.bw.backend.dto.request.ChatLogPostRequestDTO;
 import br.com.bw.backend.entity.ChatbotLog;
-import br.com.bw.backend.entity.enums.OrigemChat;
 import br.com.bw.backend.repository.ChatbotLogRepository;
 import br.com.bw.backend.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +21,6 @@ public class ChatLogService {
 
         ChatbotLog log = new ChatbotLog();
         log.setInstagramId(instagramId);
-        log.setOrigem(OrigemChat.INSTAGRAM);
         log.setMensagemUsuario(dto.mensagemUsuario());
         log.setRespostaIa(dto.respostaIa());
 
