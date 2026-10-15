@@ -1,5 +1,6 @@
 package br.com.bw.backend.security;
 
+import br.com.bw.backend.entity.enums.Perfil;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -15,6 +16,9 @@ import java.util.Optional;
 @Service
 public class JwtService {
 
+    /** Dados que o token carrega depois de validado. */
+    public record JwtPayload(Integer usuarioId, Perfil perfil) {}
+
     private final SecretKey chave;
     private final long expiracaoMinutos;
 
@@ -25,27 +29,36 @@ public class JwtService {
         this.expiracaoMinutos = expiracaoMinutos;
     }
 
-    public String gerar(Integer usuarioId, String email) {
+    public String gerar(Integer usuarioId, String email, Perfil perfil) {
         Date agora = new Date();
         Date expira = new Date(agora.getTime() + expiracaoMinutos * 60_000);
 
         return Jwts.builder()
                 .subject(String.valueOf(usuarioId))
                 .claim("email", email)
+                .claim("perfil", perfil.name())
                 .issuedAt(agora)
                 .expiration(expira)
                 .signWith(chave)
                 .compact();
     }
 
-    public Optional<Integer> validar(String token) {
+    public Optional<JwtPayload> validar(String token) {
         try {
             Claims claims = Jwts.parser()
                     .verifyWith(chave)
                     .build()
                     .parseSignedClaims(token)
                     .getPayload();
-            return Optional.of(Integer.valueOf(claims.getSubject()));
+
+            String perfil = claims.get("perfil", String.class);
+            if (perfil == null) {
+                return Optional.empty();
+            }
+
+            return Optional.of(new JwtPayload(
+                    Integer.valueOf(claims.getSubject()),
+                    Perfil.valueOf(perfil)));
         } catch (JwtException | IllegalArgumentException e) {
             return Optional.empty();
         }
