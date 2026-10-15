@@ -19,6 +19,9 @@ public class Projeto {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
     private Integer id;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cliente_id")
+    private Usuario cliente;
     @Column(name = "titulo_projeto", length = 150, nullable = false)
     private String tituloProjeto;
     @Column(name = "valor_total", precision = 10, scale = 2)
