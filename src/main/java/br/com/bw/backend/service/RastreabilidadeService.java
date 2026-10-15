@@ -24,6 +24,7 @@ public class RastreabilidadeService {
         return rastreabilidadeRepository.findAllComProjeto(pageable);
     }
 
+    @Transactional
     public Rastreabilidade save(Rastreabilidade rastreabilidade) {
         if (validationRastreabilidadeSave(rastreabilidade)) {
             log.warn("Rastreabilidade incorreta - id: {}", rastreabilidade.getId());
@@ -60,6 +61,7 @@ public class RastreabilidadeService {
         return rastreabilidadeRepository.save(rastreabilidade);
     }
 
+    @Transactional
     public void delete(Integer id) {
         log.info("Removendo rastreabilidade - id: {}", id);
 
@@ -70,6 +72,17 @@ public class RastreabilidadeService {
 
         rastreabilidadeRepository.deleteById(id);
         log.info("Rastreabilidade removida com sucesso - id: {}", id);
+    }
+
+    @Transactional
+    public Page<Rastreabilidade> listAllByProjeto(Integer projetoId, Pageable pageable){
+        projetoRepository.findById(projetoId)
+                .orElseThrow(() -> {
+                    log.warn("Projeto não encontrado - id: {}", projetoId);
+                    return new NotFoundException("Projeto não encontrado");
+                });
+
+        return rastreabilidadeRepository.findByProjetoId(projetoId, pageable);
     }
 
     public boolean validationRastreabilidadeSave(Rastreabilidade rastreabilidade) {
