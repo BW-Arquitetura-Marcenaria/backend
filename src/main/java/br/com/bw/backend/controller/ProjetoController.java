@@ -45,7 +45,9 @@ public class ProjetoController {
 
     @PostMapping()
     public ResponseEntity<ProjetoGetResponseDTO> save(@RequestBody @Valid ProjetoPostRequestDTO projetoPostRequestDTO) {
-        var projetoSaved = projetoService.save(mapper.toProjeto(projetoPostRequestDTO));
+        var projetoSaved = projetoService.save(
+                mapper.toProjeto(projetoPostRequestDTO),
+                projetoPostRequestDTO.clienteId());
         var response = mapper.toProjetoGetResponseDTO(projetoSaved);
 
         return ResponseEntity.status(201).body(response);
