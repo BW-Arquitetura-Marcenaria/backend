@@ -12,7 +12,7 @@ import org.springframework.data.domain.Page;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING, uses = ProjetoMapper.class)
 public interface RastreabilidadeMapper {
     RastreabilidadeGetResponseDTO toRastreabilidadeGetResponseDTO(Rastreabilidade rastreabilidade);
 
