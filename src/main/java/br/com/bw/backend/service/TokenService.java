@@ -1,5 +1,6 @@
 package br.com.bw.backend.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
@@ -9,6 +10,7 @@ import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.HexFormat;
 
+@Slf4j
 @Component
 public class TokenService {
 
@@ -25,6 +27,7 @@ public class TokenService {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
             return HexFormat.of().formatHex(md.digest(token.getBytes(StandardCharsets.UTF_8)));
         } catch (NoSuchAlgorithmException e) {
+            log.error("Falha ao gerar hash do token - algoritmo SHA-256 indisponível", e);
             throw new IllegalStateException("SHA-256 indisponível", e);
         }
     }
