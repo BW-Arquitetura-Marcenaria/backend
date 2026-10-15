@@ -23,6 +23,5 @@ public class Projeto {
     private String tituloProjeto;
     @Column(name = "valor_total", precision = 10, scale = 2)
     private BigDecimal valorTotal;
-    @Enumerated(EnumType.STRING)
     private StatusProjeto status;
 }

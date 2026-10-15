@@ -52,10 +52,10 @@ CREATE TABLE projetos
     CONSTRAINT chk_projetos_status
         CHECK (
             status IN (
-                       'PLANEJAMENTO',
-                       'EM_EXECUCAO',
-                       'CONCLUIDO',
-                       'CANCELADO'
+                       'Planejamento',
+                       'Em Execucao',
+                       'Concluido',
+                       'Cancelado'
                 )
             ),
 
@@ -237,19 +237,19 @@ CREATE TABLE tabela_precos_referencia
     CONSTRAINT chk_categoria
         CHECK (
             categoria IN (
-                'MARCENARIA_PLANEJADA',
-                'DORMITORIO_E_CLOSSET',
-                'MAO_DE_OBRA'
+                'Marcenaria Planejada',
+                'Dormitorio e Closset',
+                'Mao de Obra'
             )
         ),
 
     CONSTRAINT chk_unidade
         CHECK (
             unidade IN (
-                'UNIDADE',
-                'METRO_QUADRADO',
-                'METRO_LINEAR',
-                'HORA'
+                'Unidade',
+                'Metro Quadrado',
+                'Metro Linear',
+                'Hora'
             )
         )
 );
