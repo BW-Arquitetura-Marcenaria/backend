@@ -21,10 +21,10 @@ public class ChatLogService {
     public void registrarInstagram(ChatLogPostRequestDTO dto) {
         String instagramId = dto.instagramId().trim();
 
-        ChatbotLog log = new ChatbotLog();
-        log.setInstagramId(instagramId);
-        log.setMensagemUsuario(dto.mensagemUsuario());
-        log.setRespostaIa(dto.respostaIa());
+        ChatbotLog chatbotLog = new ChatbotLog();
+        chatbotLog.setInstagramId(instagramId);
+        chatbotLog.setMensagemUsuario(dto.mensagemUsuario());
+        chatbotLog.setRespostaIa(dto.respostaIa());
 
         usuarioRepository.findByInstagramId(instagramId).ifPresent(chatbotLog::setCliente);
 

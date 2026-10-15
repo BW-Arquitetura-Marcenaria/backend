@@ -33,12 +33,12 @@ public class ProjetoService {
                 : projetoRepository.findByIdAndClienteId(id, UsuarioLogado.id());
 
         return projeto.orElseThrow(() ->
-                new NotFoundException("Projeto não encontrado");
+                new NotFoundException("Projeto não encontrado"));
     }
 
     public Projeto save(Projeto projeto, Integer clienteId) {
         var cliente = usuarioRepository.findById(clienteId)
-                .orElseThrow(() -> new NotFoundException("Cliente não encontrado");
+                .orElseThrow(() -> new NotFoundException("Cliente não encontrado"));
 
         projeto.setCliente(cliente);
 
@@ -70,12 +70,8 @@ public class ProjetoService {
     public void delete(Integer id) {
         log.info("Removendo projeto - id: {}", id);
 
-        if (!projetoRepository.existsById(id)) {
-            log.warn("Projeto não encontrado para remoção - id: {}", id);
-            throw new NotFoundException("Projeto não encontrado");
-        }
-
-        projetoRepository.deleteById(id);
+        var projeto = findById(id);
+        projetoRepository.delete(projeto);
         log.info("Projeto removido com sucesso - id: {}", id);
     }
 }
