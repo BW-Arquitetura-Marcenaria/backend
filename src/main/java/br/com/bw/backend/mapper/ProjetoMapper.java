@@ -11,6 +11,7 @@ import org.springframework.data.domain.Page;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface ProjetoMapper {
+    @Mapping(target = "clienteId", source = "cliente.id")
     ProjetoGetResponseDTO toProjetoGetResponseDTO(Projeto projeto);
 
     default Page<ProjetoGetResponseDTO> toProjetoGetResponseDTO(Page<Projeto> projeto) {

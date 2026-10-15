@@ -38,7 +38,7 @@ public class Financeiro {
     @Column(length = 20)
     private StatusTransacao status;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "projeto_id", nullable = false)
     private Projeto projeto;
 }

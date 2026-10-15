@@ -1,7 +1,5 @@
 package br.com.bw.backend.dto.response;
 
-import br.com.bw.backend.entity.Projeto;
-
 import java.time.LocalDateTime;
 
 public record RastreabilidadeGetResponseDTO(
@@ -11,7 +9,8 @@ public record RastreabilidadeGetResponseDTO(
         String fornecedor,
         String origem,
         String certificacoes,
+        String volume,
         LocalDateTime dataRegistro,
-        Projeto projeto
+        ProjetoGetResponseDTO projeto
 ) {
 }

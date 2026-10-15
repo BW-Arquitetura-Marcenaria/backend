@@ -60,4 +60,16 @@ public class RastreabilidadeController {
 
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("projeto/{projetoId}")
+    public ResponseEntity<Page<RastreabilidadeGetResponseDTO>> listAllByProjeto(
+            @PathVariable Integer projetoId,
+            @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.DESC)
+            Pageable pageable
+    ){
+        var response = rastreabilidadeService.listAllByProjeto(projetoId, pageable)
+                .map(mapper::toRastreabilidadeGetResponseDTO);
+
+        return ResponseEntity.ok(response);
+    }
 }

@@ -165,8 +165,9 @@ CREATE TABLE rastreabilidade_madeira
     lote          VARCHAR(100) NOT NULL,
     tipo_madeira  VARCHAR(100) NOT NULL,
     fornecedor    VARCHAR(150) NOT NULL,
-    origem        VARCHAR(150),
-    certificacoes VARCHAR(255),
+    origem        VARCHAR(150) NOT NULL,
+    certificacoes VARCHAR(255) NOT NULL,
+    volume VARCHAR(100) NOT NULL,
     data_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT fk_madeira_projeto
