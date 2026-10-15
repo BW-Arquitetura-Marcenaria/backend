@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 
 public record ProjetoGetResponseDTO(
         Integer id,
+        Integer clienteId,
         String tituloProjeto,
         BigDecimal valorTotal,
         StatusProjeto status
