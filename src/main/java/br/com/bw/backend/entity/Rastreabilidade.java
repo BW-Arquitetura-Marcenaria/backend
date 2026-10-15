@@ -30,7 +30,7 @@ public class Rastreabilidade {
     @Column(name = "data_registro")
     private LocalDateTime dataRegistro;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "projeto_id", nullable = false)
     private Projeto projeto;
 }

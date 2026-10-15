@@ -21,7 +21,7 @@ public class RastreabilidadeService {
 
     public Page<Rastreabilidade> findAll(Pageable pageable) {
         log.info("Listando rastreabilidade - página: {}, tamanho: {}", pageable.getPageNumber(), pageable.getPageSize());
-        return rastreabilidadeRepository.findAll(pageable);
+        return rastreabilidadeRepository.findAllComProjeto(pageable);
     }
 
     public Rastreabilidade save(Rastreabilidade rastreabilidade) {
@@ -29,6 +29,9 @@ public class RastreabilidadeService {
             log.warn("Rastreabilidade incorreta - id: {}", rastreabilidade.getId());
             throw new BusinessValidationException("Rastreabilidade incorreta");
         }
+
+        projetoRepository.findById(rastreabilidade.getProjeto().getId())
+                .ifPresent(rastreabilidade::setProjeto);
 
         log.info("Rastreabilidade criada com sucesso - id: {}", rastreabilidade.getId());
         return rastreabilidadeRepository.save(rastreabilidade);
@@ -48,6 +51,9 @@ public class RastreabilidadeService {
             log.warn("Referência incorreta - id: {}", id);
             throw new BusinessValidationException("Rastreabilidade incorreta");
         }
+
+        projetoRepository.findById(rastreabilidade.getProjeto().getId())
+                .ifPresent(rastreabilidade::setProjeto);
 
         rastreabilidade.setId(rastreabilidadeExistente.getId());
         log.info("Rastreabilidade atualizada com sucesso - id: {}", rastreabilidade.getId());
