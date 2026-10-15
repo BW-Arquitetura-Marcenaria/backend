@@ -9,6 +9,7 @@ public record RastreabilidadeGetResponseDTO(
         String fornecedor,
         String origem,
         String certificacoes,
+        String volume,
         LocalDateTime dataRegistro,
         ProjetoGetResponseDTO projeto
 ) {
