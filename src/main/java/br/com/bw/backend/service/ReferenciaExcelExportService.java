@@ -46,4 +46,18 @@ public class ReferenciaExcelExportService {
             throw new IllegalStateException("Erro ao gerar Excel da tabela de preços referência", e);
         }
     }
+
+    private CellStyle criarEstiloCabecalho(Workbook workbook) {
+        Font headerFont = workbook.createFont();
+        headerFont.setBold(true);
+        headerFont.setColor(IndexedColors.WHITE.getIndex());
+
+        CellStyle headerStyle = workbook.createCellStyle();
+        headerStyle.setFont(headerFont);
+        headerStyle.setFillForegroundColor(IndexedColors.DARK_BLUE.getIndex());
+        headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        headerStyle.setAlignment(HorizontalAlignment.CENTER);
+        headerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        return headerStyle;
+    }
 }
