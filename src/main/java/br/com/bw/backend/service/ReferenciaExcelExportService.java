@@ -60,4 +60,11 @@ public class ReferenciaExcelExportService {
         headerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
         return headerStyle;
     }
+
+    private CellStyle criarEstiloMoeda(Workbook workbook) {
+        CellStyle moedaStyle = workbook.createCellStyle();
+        DataFormat formatoDados = workbook.createDataFormat();
+        moedaStyle.setDataFormat(formatoDados.getFormat("R$ #,##0.00"));
+        return moedaStyle;
+    }
 }
