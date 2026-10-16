@@ -45,4 +45,17 @@ public class ReferenciaPdfExportService {
             throw new IllegalStateException("Erro ao gerar PDF da tabela de preços referência", e);
         }
     }
+
+    private void adicionarTitulo(Document document) throws DocumentException {
+        Font tituloFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16);
+        Paragraph titulo = new Paragraph("Tabela de Preços Referência", tituloFont);
+        titulo.setSpacingAfter(10);
+        document.add(titulo);
+
+        Font subtituloFont = FontFactory.getFont(FontFactory.HELVETICA, 10, Font.ITALIC);
+        Paragraph geradoEm = new Paragraph(
+                "Gerado em: " + java.time.LocalDateTime.now().format(DATA_FORMATTER), subtituloFont);
+        geradoEm.setSpacingAfter(15);
+        document.add(geradoEm);
+    }
 }
