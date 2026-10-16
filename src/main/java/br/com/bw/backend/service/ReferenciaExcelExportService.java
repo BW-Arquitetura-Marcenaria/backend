@@ -67,4 +67,13 @@ public class ReferenciaExcelExportService {
         moedaStyle.setDataFormat(formatoDados.getFormat("R$ #,##0.00"));
         return moedaStyle;
     }
+
+    private void criarCabecalho(Sheet sheet, CellStyle headerStyle) {
+        Row headerRow = sheet.createRow(0);
+        for (int i = 0; i < HEADERS.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(HEADERS[i]);
+            cell.setCellStyle(headerStyle);
+        }
+    }
 }
