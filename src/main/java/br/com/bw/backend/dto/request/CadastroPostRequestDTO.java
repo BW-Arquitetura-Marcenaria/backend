@@ -17,15 +17,21 @@ public record CadastroPostRequestDTO(
         String nome,
         @NotBlank @Size(max = 100)
         String sobrenome,
-        @Size(max = 20)
+        @NotBlank @Size(max = 20)
         String cpf,
-        @Size(max = 20)
-        String cnpj,
         LocalDate dataNascimento,
         @NotBlank @Email @Size(max = 150)
         String email,
         @NotBlank @Size(max = 20)
         String telefone,
+        @NotBlank @Size(max = 30)
+        String origemContato,
         @NotBlank @Size(min = 8, max = 72)
-        String senha
+        String senha,
+        @Size(max = 20)
+        String cnpj,
+        @Size(max = 150)
+        String razaoSocial,
+        @Size(max = 150)
+        String nomeFantasia
 ) {}
