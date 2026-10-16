@@ -100,4 +100,10 @@ public class ReferenciaPdfExportService {
 
         document.add(table);
     }
+
+    private PdfPCell criarCelula(String texto, Font font) {
+        PdfPCell cell = new PdfPCell(new Phrase(texto != null ? texto : "-", font));
+        cell.setPadding(5);
+        return cell;
+    }
 }
