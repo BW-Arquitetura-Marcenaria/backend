@@ -69,4 +69,15 @@ public class ReferenciaController {
                 .contentType(MediaType.APPLICATION_PDF)
                 .body(pdf);
     }
+
+    @GetMapping("/export/excel")
+    public ResponseEntity<byte[]> exportarExcel() {
+        byte[] excel = referenciaExcelExportService.exportarExcel();
+        String nomeArquivo = "tabela-precos-referencia-" + LocalDate.now() + ".xlsx";
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + nomeArquivo + "\"")
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(excel);
+    }
 }
