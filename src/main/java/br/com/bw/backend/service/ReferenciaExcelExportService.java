@@ -76,4 +76,33 @@ public class ReferenciaExcelExportService {
             cell.setCellStyle(headerStyle);
         }
     }
+
+    private void preencherDados(Sheet sheet, List<Referencia> referencias, CellStyle moedaStyle) {
+        int rowIndex = 1;
+        for (Referencia referencia : referencias) {
+            Row row = sheet.createRow(rowIndex++);
+
+            row.createCell(0).setCellValue(referencia.getCategoria() != null ? referencia.getCategoria().getValor() : "-");
+
+            Cell precoCell = row.createCell(1);
+            if (referencia.getPrecoReferencia() != null) {
+                precoCell.setCellValue(referencia.getPrecoReferencia().doubleValue());
+                precoCell.setCellStyle(moedaStyle);
+            } else {
+                precoCell.setCellValue("-");
+            }
+
+            row.createCell(2).setCellValue(referencia.getDescricao() != null ? referencia.getDescricao() : "-");
+            row.createCell(3).setCellValue(referencia.getMaterialBase() != null ? referencia.getMaterialBase() : "-");
+            row.createCell(4).setCellValue(referencia.getUnidade() != null ? referencia.getUnidade().getValor() : "-");
+            row.createCell(5).setCellValue(
+                    referencia.getDataAtualizacao() != null ? referencia.getDataAtualizacao().format(DATA_FORMATTER) : "-");
+        }
+
+        if (referencias.isEmpty()) {
+            Row emptyRow = sheet.createRow(1);
+            Cell emptyCell = emptyRow.createCell(0);
+            emptyCell.setCellValue("Nenhuma referência de preço cadastrada.");
+        }
+    }
 }
