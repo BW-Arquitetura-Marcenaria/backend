@@ -4,6 +4,7 @@ import br.com.bw.backend.dto.request.ReferenciaPostRequestDTO;
 import br.com.bw.backend.dto.request.ReferenciaPutRequestDTO;
 import br.com.bw.backend.dto.response.ReferenciaGetResponseDTO;
 import br.com.bw.backend.mapper.ReferenciaMapper;
+import br.com.bw.backend.service.ReferenciaExcelExportService;
 import br.com.bw.backend.service.ReferenciaPdfExportService;
 import br.com.bw.backend.service.ReferenciaService;
 import jakarta.validation.Valid;
@@ -25,6 +26,7 @@ import java.time.LocalDate;
 public class ReferenciaController {
     private final ReferenciaService referenciaService;
     private final ReferenciaPdfExportService referenciaPdfExportService;
+    private final ReferenciaExcelExportService referenciaExcelExportService;
     private final ReferenciaMapper mapper;
 
     @GetMapping()
@@ -66,5 +68,16 @@ public class ReferenciaController {
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + nomeArquivo + "\"")
                 .contentType(MediaType.APPLICATION_PDF)
                 .body(pdf);
+    }
+
+    @GetMapping("/export/excel")
+    public ResponseEntity<byte[]> exportarExcel() {
+        byte[] excel = referenciaExcelExportService.exportarExcel();
+        String nomeArquivo = "tabela-precos-referencia-" + LocalDate.now() + ".xlsx";
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + nomeArquivo + "\"")
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(excel);
     }
 }
