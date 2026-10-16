@@ -4,25 +4,28 @@ import br.com.bw.backend.dto.request.ReferenciaPostRequestDTO;
 import br.com.bw.backend.dto.request.ReferenciaPutRequestDTO;
 import br.com.bw.backend.dto.response.ReferenciaGetResponseDTO;
 import br.com.bw.backend.mapper.ReferenciaMapper;
+import br.com.bw.backend.service.ReferenciaPdfExportService;
 import br.com.bw.backend.service.ReferenciaService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+
 @RestController
 @RequestMapping("v1/referencias")
+@RequiredArgsConstructor
 public class ReferenciaController {
     private final ReferenciaService referenciaService;
+    private final ReferenciaPdfExportService referenciaPdfExportService;
     private final ReferenciaMapper mapper;
-
-    public ReferenciaController(ReferenciaService referenciaService, ReferenciaMapper mapper) {
-        this.referenciaService = referenciaService;
-        this.mapper = mapper;
-    }
 
     @GetMapping()
     public ResponseEntity<Page<ReferenciaGetResponseDTO>> listAll(
@@ -52,5 +55,16 @@ public class ReferenciaController {
     public ResponseEntity<Void> deleteById(@PathVariable Integer id) {
         referenciaService.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/export/pdf")
+    public ResponseEntity<byte[]> exportarPdf() {
+        byte[] pdf = referenciaPdfExportService.exportarPdf();
+        String nomeArquivo = "tabela-precos-referencia-" + LocalDate.now() + ".pdf";
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + nomeArquivo + "\"")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdf);
     }
 }
