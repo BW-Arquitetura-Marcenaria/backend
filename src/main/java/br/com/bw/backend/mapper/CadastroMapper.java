@@ -19,8 +19,10 @@ public interface CadastroMapper {
     @Mapping(target = "etapaFunil", ignore = true)
     @Mapping(target = "dataCadastro", ignore = true)
     @Mapping(target = "instagramId", ignore = true)
+    @Mapping(target = "instagramUsername", ignore = true)
     @Mapping(target = "senhaHash", ignore = true)
     @Mapping(target = "ativo", ignore = true)
     @Mapping(target = "perfil", ignore = true)
+    @Mapping(target = "empresa", ignore = true)
     Usuario toEntity(CadastroPostRequestDTO dto);
 }

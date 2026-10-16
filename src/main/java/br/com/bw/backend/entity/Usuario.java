@@ -37,17 +37,17 @@ public class Usuario {
     @Column(length = 20)
     private String cpf;
 
-    @Column(length = 20)
-    private String cnpj;
-
     @Column(name = "data_nascimento")
     private LocalDate dataNascimento;
 
     @Column(nullable = false, length = 150)
     private String email;
 
-    @Column(nullable = false, length = 20)
+    @Column(length = 20)
     private String telefone;
+
+    @Column(name = "origem_contato", length = 30)
+    private String origemContato;
 
     @Builder.Default
     @Column(name = "etapa_funil", length = 20)
@@ -60,6 +60,9 @@ public class Usuario {
     @Column(name = "instagram_id", length = 40)
     private String instagramId;
 
+    @Column(name = "instagram_username", length = 60)
+    private String instagramUsername;
+
     @Column(name = "senha_hash", length = 100)
     private String senhaHash;
 
@@ -71,4 +74,8 @@ public class Usuario {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private Perfil perfil = Perfil.CLIENTE;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "empresa_id")
+    private Empresa empresa;
 }
