@@ -105,4 +105,10 @@ public class ReferenciaExcelExportService {
             emptyCell.setCellValue("Nenhuma referência de preço cadastrada.");
         }
     }
+
+    private void ajustarLargurasColunas(Sheet sheet) {
+        for (int i = 0; i < HEADERS.length; i++) {
+            sheet.autoSizeColumn(i);
+        }
+    }
 }
