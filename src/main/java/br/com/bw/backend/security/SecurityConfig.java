@@ -43,6 +43,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/v1/projetos/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/v1/projetos/**").hasRole("ADMIN")
 
+                        .requestMatchers("/login/oauth2/code/google").permitAll()
+                        .requestMatchers("/v1/api/admin/google-calendar/**").hasRole("ADMIN")
+
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(new ApiKeyFilter(apiKey), UsernamePasswordAuthenticationFilter.class)
