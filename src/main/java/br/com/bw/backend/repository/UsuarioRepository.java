@@ -1,8 +1,10 @@
 package br.com.bw.backend.repository;
 
 import br.com.bw.backend.entity.Usuario;
+import br.com.bw.backend.entity.enums.Perfil;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
@@ -14,4 +16,6 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
     boolean existsByInstagramId(String instagramId);
 
     boolean existsByEmail(String email);
+
+    List<Usuario> findByEmpresaIdAndPerfilOrderByIdAsc(Integer empresaId, Perfil perfil);
 }
