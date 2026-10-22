@@ -3,7 +3,7 @@
 -- =====================================================
 CREATE TABLE estado_oauth_google
 (
-    id                     BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id                     INT AUTO_INCREMENT PRIMARY KEY,
     hash_estado            CHAR(64)     NOT NULL,
     hash_vinculo_navegador CHAR(64)     NOT NULL,
     data_expiracao         TIMESTAMP(6) NOT NULL,
