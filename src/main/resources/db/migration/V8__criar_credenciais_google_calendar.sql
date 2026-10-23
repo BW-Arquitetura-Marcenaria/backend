@@ -3,7 +3,7 @@
 -- =====================================================
 CREATE TABLE credenciais_google_calendar
 (
-    id                              BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id                              INT AUTO_INCREMENT PRIMARY KEY,
     token_atualizacao_criptografado TEXT         NOT NULL,
     escopo                          VARCHAR(500) NOT NULL,
     data_criacao                    TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP(6),
