@@ -7,9 +7,7 @@ public record ContaAdminGetResponseDTO(
     public record EmpresaDados(
             String nome,
             String nomeFantasia,
-            String responsaveis,
             String cnpj,
-            String email,
             String telefone
     ) {}
 
