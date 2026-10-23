@@ -16,6 +16,4 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
     boolean existsByInstagramId(String instagramId);
 
     boolean existsByEmail(String email);
-
-    List<Usuario> findByEmpresaIdAndPerfilOrderByIdAsc(Integer empresaId, Perfil perfil);
 }
