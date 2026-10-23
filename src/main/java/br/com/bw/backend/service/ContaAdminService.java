@@ -9,7 +9,6 @@ import br.com.bw.backend.entity.Endereco;
 import br.com.bw.backend.entity.Usuario;
 import br.com.bw.backend.entity.enums.Perfil;
 import br.com.bw.backend.exception.BusinessValidationException;
-import br.com.bw.backend.exception.ConflictException;
 import br.com.bw.backend.repository.EnderecoRepository;
 import br.com.bw.backend.repository.UsuarioRepository;
 import br.com.bw.backend.security.UsuarioLogado;
@@ -20,8 +19,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -35,26 +32,20 @@ public class ContaAdminService {
     @Transactional(readOnly = true)
     public ContaAdminGetResponseDTO buscar() {
         Usuario admin = adminLogado();
-        return montarResposta(admin, empresaDe(admin));
+        return montarResposta(empresaDe(admin));
     }
 
     @Transactional
     public ContaAdminGetResponseDTO atualizarEmpresa(ContaAdminEmpresaPutRequestDTO dto) {
         Usuario admin = adminLogado();
         Empresa empresa = empresaDe(admin);
-        String email = dto.email().trim().toLowerCase();
-
-        if (!email.equals(admin.getEmail()) && usuarioRepository.existsByEmail(email)) {
-            log.warn("Atualização da empresa negada - e-mail já cadastrado: {}", email);
-            throw new ConflictException("E-mail já cadastrado");
-        }
 
         empresa.setRazaoSocial(dto.nome().trim());
+        empresa.setNomeFantasia(vazio(dto.nomeFantasia()) ? null : dto.nomeFantasia().trim());
         empresa.setTelefone(dto.telefone().trim());
-        admin.setEmail(email);
 
         log.info("Dados da empresa atualizados - empresa: {}, admin: {}", empresa.getId(), admin.getId());
-        return montarResposta(admin, empresa);
+        return montarResposta(empresa);
     }
 
     @Transactional
@@ -83,7 +74,7 @@ public class ContaAdminService {
         enderecoRepository.save(endereco);
 
         log.info("Endereço atualizado - empresa: {}", empresa.getId());
-        return montarResposta(admin, empresa);
+        return montarResposta(empresa);
     }
 
     @Transactional
@@ -113,19 +104,11 @@ public class ContaAdminService {
         log.info("Senha do admin alterada - id: {}", admin.getId());
     }
 
-    private ContaAdminGetResponseDTO montarResposta(Usuario admin, Empresa empresa) {
-        String responsaveis = usuarioRepository
-                .findByEmpresaIdAndPerfilOrderByIdAsc(empresa.getId(), Perfil.ADMIN)
-                .stream()
-                .map(Usuario::getNome)
-                .collect(Collectors.joining(" & "));
-
+    private ContaAdminGetResponseDTO montarResposta(Empresa empresa) {
         var dadosEmpresa = new ContaAdminGetResponseDTO.EmpresaDados(
                 empresa.getRazaoSocial(),
                 empresa.getNomeFantasia(),
-                responsaveis,
                 empresa.getCnpj(),
-                admin.getEmail(),
                 empresa.getTelefone());
 
         var dadosEndereco = enderecoRepository.findByEmpresaId(empresa.getId())
