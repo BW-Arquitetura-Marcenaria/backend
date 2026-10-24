@@ -14,7 +14,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/v1/api/admin/google-calendar")
 @RequiredArgsConstructor
-public class GoogleCalendarTesteController {
+public class GoogleCalendarController {
 
     private final GoogleCalendarService googleCalendarService;
 
