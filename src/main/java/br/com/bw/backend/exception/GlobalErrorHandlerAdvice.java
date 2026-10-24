@@ -103,6 +103,23 @@ public class GlobalErrorHandlerAdvice {
         return ResponseEntity.status(HttpStatus.FAILED_DEPENDENCY).body(error);
     }
 
+    @ExceptionHandler(GoogleCalendarIntegrationException.class)
+    public ResponseEntity<ApiErrorResponse> handleGoogleCalendarIntegrationException(GoogleCalendarIntegrationException e, WebRequest request) {
+        var path = request.getDescription(false).replace("uri=", "");
+        log.error("Falha ao integrar com o Google Calendar - path: {}, message: {}", path, e.getMessage(), e);
+
+        var error = new ApiErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.BAD_GATEWAY.value(),
+                HttpStatus.BAD_GATEWAY.getReasonPhrase(),
+                e.getMessage(),
+                path,
+                null
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(error);
+    }
+
     @ExceptionHandler(UnauthorizedException.class)
     public ResponseEntity<ApiErrorResponse> handleUnauthorizedException(UnauthorizedException e, WebRequest request) {
         var path = request.getDescription(false).replace("uri=", "");
