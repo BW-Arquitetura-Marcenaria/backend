@@ -5,7 +5,6 @@ import br.com.bw.backend.dto.response.EventoGoogleResponse;
 import br.com.bw.backend.dto.response.GoogleCalendarResponse;
 import br.com.bw.backend.service.GoogleCalendarService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

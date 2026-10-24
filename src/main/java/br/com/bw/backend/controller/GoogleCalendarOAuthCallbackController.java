@@ -124,7 +124,7 @@ public class GoogleCalendarOAuthCallbackController {
         ResponseCookie cookie = ResponseCookie
                 .from(COOKIE_VINCULO_NAVEGADOR, "")
                 .httpOnly(true)
-                .secure(false)
+                .secure(googleCalendarProperties.isCookieSecure())
                 .sameSite("Lax")
                 .path("/login/oauth2/code/google")
                 .maxAge(Duration.ZERO)

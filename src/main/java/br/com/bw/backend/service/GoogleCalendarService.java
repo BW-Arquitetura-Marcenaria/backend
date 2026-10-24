@@ -6,7 +6,7 @@ import br.com.bw.backend.dto.request.CriarEventoGoogleRequest;
 import br.com.bw.backend.dto.response.EventoGoogleResponse;
 import br.com.bw.backend.dto.response.GoogleCalendarResponse;
 import br.com.bw.backend.exception.BusinessValidationException;
-import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
+import br.com.bw.backend.exception.GoogleCalendarDesconectadoException;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.client.util.DateTime;
@@ -14,9 +14,11 @@ import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.model.CalendarList;
 import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.EventDateTime;
+import com.google.auth.http.HttpCredentialsAdapter;
+import com.google.auth.oauth2.UserCredentials;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -26,39 +28,44 @@ import java.util.Date;
 import java.util.List;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class GoogleCalendarService {
+
+    private static final String MENSAGEM_DESCONECTADO =
+            "A conexão com o Google Calendar expirou ou foi revogada. "
+                    + "Reconecte em POST /v1/api/admin/google-calendar/autorizar.";
 
     private final GoogleCalendarProperties properties;
     private final CredenciaisGoogleCalendarService credenciaisService;
 
     public Calendar obterCliente() throws IOException, GeneralSecurityException {
 
-        String refreshToken = credenciaisService.obterRefreshToken();
+        String refreshToken;
 
-        GoogleCredential credencial = new GoogleCredential.Builder()
-                .setTransport(GoogleNetHttpTransport.newTrustedTransport())
-                .setJsonFactory(GsonFactory.getDefaultInstance())
-                .setClientSecrets(
-                        properties.getClientId(),
-                        properties.getClientSecret()
-                )
+        try {
+            refreshToken = credenciaisService.obterRefreshToken();
+        } catch (IllegalStateException e) {
+            throw new GoogleCalendarDesconectadoException(MENSAGEM_DESCONECTADO);
+        }
+
+        UserCredentials credencial = UserCredentials.newBuilder()
+                .setClientId(properties.getClientId())
+                .setClientSecret(properties.getClientSecret())
+                .setRefreshToken(refreshToken)
                 .build();
 
-        credencial.setRefreshToken(refreshToken);
-
-        boolean tokenRenovado = credencial.refreshToken();
-
-        if (!tokenRenovado || credencial.getAccessToken() == null) {
-            throw new IllegalStateException(
-                    "Não foi possível renovar o token de acesso do Google."
-            );
+        try {
+            credencial.refresh();
+        } catch (IOException e) {
+            log.warn("Falha ao renovar token de acesso do Google Calendar: {}", e.getMessage());
+            throw new GoogleCalendarDesconectadoException(MENSAGEM_DESCONECTADO);
         }
 
         return new Calendar.Builder(
                 GoogleNetHttpTransport.newTrustedTransport(),
                 GsonFactory.getDefaultInstance(),
-                credencial
+                new HttpCredentialsAdapter(credencial)
         )
                 .setApplicationName("BW Arquitetura & Marcenaria")
                 .build();

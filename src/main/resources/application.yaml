@@ -18,6 +18,7 @@ integracoes:
       redirect-uri: ${GOOGLE_REDIRECT_URI:http://localhost:8080/login/oauth2/code/google}
       scope: https://www.googleapis.com/auth/calendar
       encryption-key: ${GOOGLE_TOKEN_ENCRYPTION_KEY}
+      cookie-secure: ${GOOGLE_OAUTH_COOKIE_SECURE:true}
 
 server:
   port: ${SERVER_PORT:8080}

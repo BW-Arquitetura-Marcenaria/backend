@@ -54,7 +54,7 @@ public class GoogleCalendarOAuthController {
         ResponseCookie cookie = ResponseCookie
                 .from(COOKIE_VINCULO_NAVEGADOR, vinculoNavegador)
                 .httpOnly(true)
-                .secure(false)
+                .secure(googleCalendarProperties.isCookieSecure())
                 .sameSite("Lax")
                 .path("/login/oauth2/code/google")
                 .maxAge(Duration.ofMinutes(VALIDADE_MINUTOS))

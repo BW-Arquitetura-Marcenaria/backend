@@ -15,4 +15,5 @@ public class GoogleCalendarProperties {
     private String clientSecret;
     private String redirectUri;
     private String scope;
+    private boolean cookieSecure;
 }
