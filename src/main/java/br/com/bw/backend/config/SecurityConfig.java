@@ -38,6 +38,9 @@ public class SecurityConfig {
                         .requestMatchers("/v1/api/cadastro/**", "/v1/api/auth/**", "/error").permitAll()
                         .requestMatchers("/v1/api/convite-admin/**").permitAll()
 
+                        // Handshake do WebSocket: a autenticacao e feita no CONNECT do STOMP (StompAuthInterceptor)
+                        .requestMatchers("/ws/**").permitAll()
+
                         .requestMatchers("/v1/api/integracoes/**").hasRole("INTEGRACAO")
 
                         .requestMatchers("/v1/rastreabilidades/**").hasRole("ADMIN")
