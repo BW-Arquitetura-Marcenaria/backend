@@ -29,6 +29,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AgendamentoService {
 
+    private static final List<StatusAgendamento> STATUS_QUE_OCUPAM_AGENDA = List.of(
+            StatusAgendamento.PENDENTE,
+            StatusAgendamento.APROVADO
+    );
+
     private final AgendamentoRepository agendamentoRepository;
     private final UsuarioRepository usuarioRepository;
     private final AgendamentoMapper agendamentoMapper;
@@ -43,6 +48,7 @@ public class AgendamentoService {
             LocalDateTime fim
     ) {
         validarPeriodo(titulo, inicio, fim);
+        validarConflitoDeHorario(inicio, fim);
 
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new NotFoundException(
@@ -122,6 +128,18 @@ public class AgendamentoService {
         if (!fim.isAfter(inicio)) {
             throw new BusinessValidationException(
                     "O horário de fim deve ser posterior ao início."
+            );
+        }
+    }
+
+    private void validarConflitoDeHorario(LocalDateTime inicio, LocalDateTime fim) {
+        boolean existeConflito = agendamentoRepository.existeConflitoDeHorario(
+                inicio, fim, STATUS_QUE_OCUPAM_AGENDA
+        );
+
+        if (existeConflito) {
+            throw new BusinessValidationException(
+                    "Já existe um agendamento pendente ou aprovado nesse horário."
             );
         }
     }

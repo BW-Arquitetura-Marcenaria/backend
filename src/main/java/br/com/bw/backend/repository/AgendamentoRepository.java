@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
+import java.time.LocalDateTime;
 
 public interface AgendamentoRepository extends JpaRepository<Agendamento, Integer> {
     List<Agendamento> findAllByOrderByCriadoEmDesc();
@@ -28,5 +29,18 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Intege
             @Param("statusEsperado") StatusAgendamento statusEsperado,
             @Param("novoStatus") StatusAgendamento novoStatus,
             @Param("observacao") String observacao
+    );
+
+    @Query("""
+        SELECT COUNT(a) > 0
+          FROM Agendamento a
+         WHERE a.status IN :statusQueOcupamAgenda
+           AND a.inicio < :fim
+           AND a.fim > :inicio
+        """)
+    boolean existeConflitoDeHorario(
+            @Param("inicio") LocalDateTime inicio,
+            @Param("fim") LocalDateTime fim,
+            @Param("statusQueOcupamAgenda") List<StatusAgendamento> statusQueOcupamAgenda
     );
 }
