@@ -1,4 +1,7 @@
 package br.com.bw.backend.dto.response;
 
-public class MensagemChatTempoRealResponseDTO {
+public record MensagemChatTempoRealResponseDTO(
+        Integer clienteId,
+        MensagemChatGetResponseDTO mensagem
+) {
 }
