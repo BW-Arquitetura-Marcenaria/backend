@@ -4,8 +4,9 @@ import br.com.bw.backend.dto.response.MinhaContaGetResponseDTO;
 import br.com.bw.backend.entity.Empresa;
 import br.com.bw.backend.entity.Usuario;
 import org.mapstruct.Mapper;
+import org.mapstruct.MappingConstants;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface MinhaContaMapper {
 
     MinhaContaGetResponseDTO toResponse(Usuario usuario);

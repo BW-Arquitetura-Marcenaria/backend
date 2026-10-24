@@ -7,8 +7,9 @@ import br.com.bw.backend.entity.LeadInstagram;
 import br.com.bw.backend.entity.Usuario;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingConstants;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface CadastroMapper {
 
     CadastroGetResponseDTO toResponse(Usuario usuario);
