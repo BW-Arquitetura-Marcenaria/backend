@@ -1,11 +1,8 @@
 package br.com.bw.backend.controller;
 
-import br.com.bw.backend.dto.request.CriarEventoGoogleRequest;
-import br.com.bw.backend.dto.response.EventoGoogleResponse;
 import br.com.bw.backend.dto.response.GoogleCalendarResponse;
 import br.com.bw.backend.service.GoogleCalendarService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -24,16 +21,5 @@ public class GoogleCalendarController {
             throws IOException, GeneralSecurityException {
 
         return googleCalendarService.listarCalendarios();
-    }
-
-    @PostMapping("/eventos")
-    public ResponseEntity<EventoGoogleResponse> criarEvento(
-            @RequestBody CriarEventoGoogleRequest request
-    ) throws IOException, GeneralSecurityException {
-
-        EventoGoogleResponse resposta =
-                googleCalendarService.criarEvento(request);
-
-        return ResponseEntity.status(201).body(resposta);
     }
 }
