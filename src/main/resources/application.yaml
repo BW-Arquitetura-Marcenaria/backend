@@ -16,7 +16,7 @@ integracoes:
       client-id: ${GOOGLE_CLIENT_ID}
       client-secret: ${GOOGLE_CLIENT_SECRET}
       redirect-uri: ${GOOGLE_REDIRECT_URI:http://localhost:8080/login/oauth2/code/google}
-      scope: https://www.googleapis.com/auth/calendar.events
+      scope: https://www.googleapis.com/auth/calendar
       encryption-key: ${GOOGLE_TOKEN_ENCRYPTION_KEY}
 
 server:
