@@ -14,6 +14,7 @@ import br.com.bw.backend.mapper.AgendamentoMapper;
 import br.com.bw.backend.repository.AgendamentoRepository;
 import br.com.bw.backend.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +24,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class AgendamentoService {
 
@@ -84,15 +86,47 @@ public class AgendamentoService {
 
     @Transactional
     public Agendamento aprovar(Integer agendamentoId, String observacao) {
-        Agendamento agendamento = buscarPendente(agendamentoId);
+        Agendamento agendamento = agendamentoRepository.findById(agendamentoId)
+                .orElseThrow(() -> new NotFoundException("Agendamento não encontrado."));
+
+        int linhasAtualizadas = agendamentoRepository.atualizarStatusSeStatusAtualFor(
+                agendamentoId,
+                StatusAgendamento.PENDENTE,
+                StatusAgendamento.APROVADO,
+                observacao
+        );
+
+        if (linhasAtualizadas == 0) {
+            throw new BusinessValidationException(
+                    "Somente agendamentos pendentes podem receber uma decisão.");
+        }
 
         String googleEventId = criarEventoNoGoogleCalendar(agendamento);
 
-        agendamento.setStatus(StatusAgendamento.APROVADO);
-        agendamento.setObservacaoAdmin(observacao);
-        agendamento.setGoogleEventId(googleEventId);
+        try {
+            agendamento.setStatus(StatusAgendamento.APROVADO);
+            agendamento.setObservacaoAdmin(observacao);
+            agendamento.setGoogleEventId(googleEventId);
 
-        return agendamentoRepository.save(agendamento);
+            return agendamentoRepository.saveAndFlush(agendamento);
+        } catch (RuntimeException e) {
+            compensarCriacaoDeEvento(googleEventId);
+            throw e;
+        }
+    }
+
+    private void compensarCriacaoDeEvento(String googleEventId) {
+        try {
+            googleCalendarService.excluirEvento(googleEventId);
+        } catch (Exception compensacaoFalhou) {
+            log.error(
+                    "Falha ao compensar (excluir) o evento '{}' no Google Calendar após erro de "
+                            + "persistência local. O evento pode ter ficado órfão na agenda e precisa "
+                            + "ser removido manualmente.",
+                    googleEventId,
+                    compensacaoFalhou
+            );
+        }
     }
 
     private String criarEventoNoGoogleCalendar(Agendamento agendamento) {
@@ -118,23 +152,23 @@ public class AgendamentoService {
 
     @Transactional
     public Agendamento recusar(Integer agendamentoId, String observacao) {
-        Agendamento agendamento = buscarPendente(agendamentoId);
-
-        agendamento.setStatus(StatusAgendamento.RECUSADO);
-        agendamento.setObservacaoAdmin(observacao);
-
-        return agendamentoRepository.save(agendamento);
-    }
-
-    private Agendamento buscarPendente(Integer agendamentoId) {
         Agendamento agendamento = agendamentoRepository.findById(agendamentoId)
-                .orElseThrow(() ->
-                        new NotFoundException("Agendamento não encontrado."));
+                .orElseThrow(() -> new NotFoundException("Agendamento não encontrado."));
 
-        if (agendamento.getStatus() != StatusAgendamento.PENDENTE) {
+        int linhasAtualizadas = agendamentoRepository.atualizarStatusSeStatusAtualFor(
+                agendamentoId,
+                StatusAgendamento.PENDENTE,
+                StatusAgendamento.RECUSADO,
+                observacao
+        );
+
+        if (linhasAtualizadas == 0) {
             throw new BusinessValidationException(
                     "Somente agendamentos pendentes podem receber uma decisão.");
         }
+
+        agendamento.setStatus(StatusAgendamento.RECUSADO);
+        agendamento.setObservacaoAdmin(observacao);
 
         return agendamento;
     }

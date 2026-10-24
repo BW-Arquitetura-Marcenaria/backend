@@ -145,5 +145,17 @@ public class GoogleCalendarService {
         );
     }
 
+    public void excluirEvento(String googleEventId) throws IOException, GeneralSecurityException {
+        if (googleEventId == null || googleEventId.isBlank()) {
+            return;
+        }
+
+        Calendar cliente = obterCliente();
+
+        cliente.events()
+                .delete("primary", googleEventId)
+                .execute();
+    }
+
 }
 
