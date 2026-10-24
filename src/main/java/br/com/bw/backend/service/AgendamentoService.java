@@ -1,10 +1,12 @@
 package br.com.bw.backend.service;
 
+import br.com.bw.backend.dto.request.SolicitacaoAgendamentoRequest;
 import br.com.bw.backend.entity.Agendamento;
 import br.com.bw.backend.entity.Usuario;
 import br.com.bw.backend.entity.enums.StatusAgendamento;
 import br.com.bw.backend.exception.BusinessValidationException;
 import br.com.bw.backend.exception.NotFoundException;
+import br.com.bw.backend.mapper.AgendamentoMapper;
 import br.com.bw.backend.repository.AgendamentoRepository;
 import br.com.bw.backend.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +21,7 @@ public class AgendamentoService {
 
     private final AgendamentoRepository agendamentoRepository;
     private final UsuarioRepository usuarioRepository;
+    private final AgendamentoMapper agendamentoMapper;
 
     @Transactional
     public Agendamento solicitar(
@@ -51,14 +54,17 @@ public class AgendamentoService {
                         "Usuário não encontrado."
                 ));
 
-        Agendamento agendamento = Agendamento.builder()
-                .usuario(usuario)
-                .titulo(titulo)
-                .descricao(descricao)
-                .inicio(inicio)
-                .fim(fim)
-                .status(StatusAgendamento.PENDENTE)
-                .build();
+        Agendamento agendamento = agendamentoMapper.toEntity(
+                new SolicitacaoAgendamentoRequest(
+                        titulo,
+                        descricao,
+                        inicio,
+                        fim
+                )
+        );
+
+        agendamento.setUsuario(usuario);
+        agendamento.setStatus(StatusAgendamento.PENDENTE);
 
         return agendamentoRepository.save(agendamento);
     }
