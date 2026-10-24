@@ -16,4 +16,6 @@ public class GoogleCalendarProperties {
     private String redirectUri;
     private String scope;
     private boolean cookieSecure;
+    private String calendarId = "primary";
+    private String timezone = "America/Sao_Paulo";
 }

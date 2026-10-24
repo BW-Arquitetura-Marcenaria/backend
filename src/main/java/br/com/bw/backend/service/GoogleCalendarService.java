@@ -114,7 +114,7 @@ public class GoogleCalendarService {
             );
         }
 
-        ZoneId fuso = ZoneId.of("America/Sao_Paulo");
+        ZoneId fuso = ZoneId.of(properties.getTimezone());
 
         Event evento = new Event()
                 .setSummary(request.titulo().trim())
@@ -135,7 +135,7 @@ public class GoogleCalendarService {
         Calendar cliente = obterCliente();
 
         Event criado = cliente.events()
-                .insert("primary", evento)
+                .insert(properties.getCalendarId(), evento)
                 .execute();
 
         return new EventoGoogleResponse(
@@ -153,7 +153,7 @@ public class GoogleCalendarService {
         Calendar cliente = obterCliente();
 
         cliente.events()
-                .delete("primary", googleEventId)
+                .delete(properties.getCalendarId(), googleEventId)
                 .execute();
     }
 

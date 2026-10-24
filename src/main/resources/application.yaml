@@ -19,6 +19,8 @@ integracoes:
       scope: https://www.googleapis.com/auth/calendar
       encryption-key: ${GOOGLE_TOKEN_ENCRYPTION_KEY}
       cookie-secure: ${GOOGLE_OAUTH_COOKIE_SECURE:true}
+      calendar-id: ${GOOGLE_CALENDAR_ID:primary}
+      timezone: ${GOOGLE_CALENDAR_TIMEZONE:America/Sao_Paulo}
 
 server:
   port: ${SERVER_PORT:8080}
