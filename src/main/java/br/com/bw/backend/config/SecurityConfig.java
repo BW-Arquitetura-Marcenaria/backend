@@ -47,6 +47,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/v1/projetos/**").hasRole("ADMIN")
                         .requestMatchers("/v1/admin/**").hasRole("ADMIN")
 
+                        .requestMatchers("/v1/chat/**").hasRole("CLIENTE")
+
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(new ApiKeyFilter(apiKey), UsernamePasswordAuthenticationFilter.class)
