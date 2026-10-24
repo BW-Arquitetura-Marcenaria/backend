@@ -20,4 +20,6 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
     boolean existsByCpf(String cpf);
 
     List<Usuario> findByEmpresaIdAndPerfilOrderByIdAsc(Integer empresaId, Perfil perfil);
+
+    List<Usuario> findByPerfilAndAtivoTrue(Perfil perfil);
 }
