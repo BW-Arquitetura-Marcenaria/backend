@@ -7,11 +7,11 @@ import br.com.bw.backend.mapper.AgendamentoMapper;
 import br.com.bw.backend.service.AgendamentoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("v1/agendamentos")
@@ -39,6 +39,18 @@ public class AgendamentoController {
         AgendamentoResponse response = agendamentoMapper.toResponse(agendamento);
 
         return ResponseEntity.status(201).body(response);
+    }
+
+    @GetMapping("/admin")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<AgendamentoResponse>> listarTodos() {
+        List<AgendamentoResponse> respostas = agendamentoService
+                .listarTodos()
+                .stream()
+                .map(agendamentoMapper::toResponse)
+                .toList();
+
+        return ResponseEntity.ok(respostas);
     }
 }
 
