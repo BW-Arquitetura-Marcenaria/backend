@@ -2,15 +2,18 @@ package br.com.bw.backend.service;
 
 import br.com.bw.backend.config.CredenciaisGoogleCalendarService;
 import br.com.bw.backend.config.GoogleCalendarProperties;
+import br.com.bw.backend.dto.response.GoogleCalendarResponse;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.calendar.Calendar;
+import com.google.api.services.calendar.model.CalendarList;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -49,6 +52,26 @@ public class GoogleCalendarService {
         )
                 .setApplicationName("BW Arquitetura & Marcenaria")
                 .build();
+    }
+
+    public List<GoogleCalendarResponse> listarCalendarios()
+            throws IOException, GeneralSecurityException {
+
+        Calendar cliente = obterCliente();
+
+        CalendarList calendarios = cliente.calendarList()
+                .list()
+                .execute();
+
+        return calendarios.getItems()
+                .stream()
+                .map(calendario -> new GoogleCalendarResponse(
+                        calendario.getId(),
+                        calendario.getSummary(),
+                        calendario.getTimeZone(),
+                        Boolean.TRUE.equals(calendario.getPrimary())
+                ))
+                .toList();
     }
 }
 
