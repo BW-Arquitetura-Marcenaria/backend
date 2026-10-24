@@ -10,6 +10,7 @@ public record AgendamentoResponse(
         String descricao,
         LocalDateTime inicio,
         LocalDateTime fim,
-        StatusAgendamento status
+        StatusAgendamento status,
+        String googleEventId
 ) {
 }
