@@ -1,5 +1,7 @@
-package br.com.bw.backend.security;
+package br.com.bw.backend.config;
 
+import br.com.bw.backend.security.ApiKeyFilter;
+import br.com.bw.backend.security.JwtAuthFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
