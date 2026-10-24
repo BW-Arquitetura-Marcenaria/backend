@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -31,6 +32,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
+                .cors(Customizer.withDefaults())
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(e -> e
                         .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
@@ -38,6 +40,7 @@ public class SecurityConfig {
 
                         .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/v1/api/cadastro/**", "/v1/api/auth/**", "/error").permitAll()
+                        .requestMatchers("/v1/api/convite-admin/**").permitAll()
 
                         .requestMatchers("/v1/api/integracoes/**").hasRole("INTEGRACAO")
 
@@ -46,6 +49,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/v1/projetos/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/v1/projetos/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/v1/projetos/**").hasRole("ADMIN")
+                        .requestMatchers("/v1/admin/**").hasRole("ADMIN")
 
                         .requestMatchers("/login/oauth2/code/google").permitAll()
                         .requestMatchers("/v1/api/admin/google-calendar/**").hasRole("ADMIN")

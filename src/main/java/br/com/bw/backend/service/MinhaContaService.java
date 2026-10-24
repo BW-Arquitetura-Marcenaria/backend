@@ -1,10 +1,10 @@
 package br.com.bw.backend.service;
 
 import br.com.bw.backend.dto.request.MinhaContaPutRequestDTO;
-import br.com.bw.backend.dto.request.MinhaContaSenhaPutRequestDTO;
 import br.com.bw.backend.dto.response.MinhaContaGetResponseDTO;
 import br.com.bw.backend.entity.Empresa;
 import br.com.bw.backend.entity.Usuario;
+import br.com.bw.backend.entity.enums.Perfil;
 import br.com.bw.backend.exception.BusinessValidationException;
 import br.com.bw.backend.exception.ConflictException;
 import br.com.bw.backend.mapper.MinhaContaMapper;
@@ -42,13 +42,18 @@ public class MinhaContaService {
             throw new ConflictException("E-mail já cadastrado");
         }
 
-        Empresa empresa = usuario.getEmpresa();
+        boolean admin = usuario.getPerfil() == Perfil.ADMIN;
+        Empresa empresa = admin ? null : usuario.getEmpresa();
         if (empresa != null && vazio(dto.razaoSocial())) {
             throw new BusinessValidationException("Razão social é obrigatória");
         }
 
         boolean trocaSenha = !vazio(dto.senhaAtual()) || !vazio(dto.novaSenha()) || !vazio(dto.confirmarNovaSenha());
         if (trocaSenha) {
+            if (admin) {
+                throw new BusinessValidationException(
+                        "A senha da conta administrativa é alterada em Segurança e avisos");
+            }
             aplicarNovaSenha(usuario, dto.senhaAtual(), dto.novaSenha(), dto.confirmarNovaSenha());
         }
 
@@ -69,13 +74,6 @@ public class MinhaContaService {
 
         log.info("Conta atualizada - id: {}{}", usuario.getId(), trocaSenha ? " (com troca de senha)" : "");
         return mapper.toResponse(usuario);
-    }
-
-    @Transactional
-    public void alterarSenha(MinhaContaSenhaPutRequestDTO dto) {
-        Usuario usuario = usuarioLogado();
-        aplicarNovaSenha(usuario, dto.senhaAtual(), dto.novaSenha(), dto.confirmarNovaSenha());
-        log.info("Senha alterada - id: {}", usuario.getId());
     }
 
     private void aplicarNovaSenha(Usuario usuario, String senhaAtual, String novaSenha, String confirmarNovaSenha) {
