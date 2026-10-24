@@ -25,11 +25,16 @@ public class EmailService {
     @Value("${app.mail.from}")
     private String remetente;
 
+    @Value("${app.mail.nome-remetente:BW Arquitetura}")
+    private String nomeRemetente;
+
     @Value("${app.convite-admin.base-url}")
     private String baseUrl;
 
     @Value("${app.convite-admin.expiracao-horas}")
     private int expiracaoHoras;
+
+    // ---------- Convite de administrador ----------
 
     public void enviarConviteAdmin(String destinatario, String nomeCompleto, String nomeEmpresa, String token) {
         String link = baseUrl + "/convite-admin?token=" + token;
@@ -63,19 +68,74 @@ public class EmailService {
                 </div>
                 """.formatted(empresa, nome, empresa, link, link, expiracaoHoras);
 
+        enviar(destinatario, nomeEmpresa, "Convite para administrar a " + nomeEmpresa, html);
+    }
+
+    // ---------- Avisos do chat ----------
+
+    public void enviarAvisoNovaMensagemParaEquipe(String destinatario, String nomeCliente) {
+        String cliente = HtmlUtils.htmlEscape(nomeCliente);
+        String link = baseUrl + "/admin/chat";
+
+        String html = """
+                <div style="font-family: Arial, sans-serif; max-width: 520px; margin: 0 auto; color: #222;">
+                  <h2 style="color: #5a3e2b;">Nova mensagem de cliente</h2>
+                  <p><strong>%s</strong> enviou uma mensagem no chat e está aguardando resposta.</p>
+                  <p style="margin: 28px 0;">
+                    <a href="%s"
+                       style="background: #5a3e2b; color: #fff; padding: 12px 24px;
+                              text-decoration: none; border-radius: 6px; display: inline-block;">
+                      Abrir conversas
+                    </a>
+                  </p>
+                  <p style="font-size: 13px; color: #666;">
+                    Você recebe um aviso por sequência de mensagens, não uma para cada mensagem.
+                  </p>
+                </div>
+                """.formatted(cliente, link);
+
+        enviar(destinatario, nomeRemetente, "Nova mensagem de " + nomeCliente, html);
+    }
+
+    public void enviarAvisoRespostaParaCliente(String destinatario, String nomeCliente) {
+        String cliente = HtmlUtils.htmlEscape(nomeCliente);
+        String empresa = HtmlUtils.htmlEscape(nomeRemetente);
+        String link = baseUrl + "/chat";
+
+        String html = """
+                <div style="font-family: Arial, sans-serif; max-width: 520px; margin: 0 auto; color: #222;">
+                  <h2 style="color: #5a3e2b;">Você tem uma resposta</h2>
+                  <p>Olá, %s.</p>
+                  <p>A equipe da <strong>%s</strong> respondeu a sua mensagem no chat.</p>
+                  <p style="margin: 28px 0;">
+                    <a href="%s"
+                       style="background: #5a3e2b; color: #fff; padding: 12px 24px;
+                              text-decoration: none; border-radius: 6px; display: inline-block;">
+                      Ver resposta
+                    </a>
+                  </p>
+                </div>
+                """.formatted(cliente, empresa, link);
+
+        enviar(destinatario, nomeRemetente, "Você tem uma resposta da " + nomeRemetente, html);
+    }
+
+    // ---------- Envio ----------
+
+    private void enviar(String destinatario, String nomeExibido, String assunto, String html) {
         try {
             MimeMessage mensagem = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mensagem, "UTF-8");
-            helper.setFrom(remetente, nomeEmpresa);
+            helper.setFrom(remetente, nomeExibido);
             helper.setTo(destinatario);
-            helper.setSubject("Convite para administrar a " + nomeEmpresa);
+            helper.setSubject(assunto);
             helper.setText(html, true);
 
             mailSender.send(mensagem);
         } catch (MessagingException | UnsupportedEncodingException | MailException e) {
-            log.error("Falha ao enviar o convite de administrador para {}", destinatario, e);
+            log.error("Falha ao enviar e-mail '{}' para {}", assunto, destinatario, e);
             throw new ResponseStatusException(HttpStatus.BAD_GATEWAY,
-                    "Não foi possível enviar o e-mail do convite. Tente novamente.");
+                    "Não foi possível enviar o e-mail. Tente novamente.");
         }
     }
 }
