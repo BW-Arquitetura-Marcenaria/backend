@@ -21,6 +21,9 @@ integracoes:
       cookie-secure: ${GOOGLE_OAUTH_COOKIE_SECURE:true}
       calendar-id: ${GOOGLE_CALENDAR_ID:primary}
       timezone: ${GOOGLE_CALENDAR_TIMEZONE:America/Sao_Paulo}
+      sincronizacao:
+        intervalo-ms: ${GOOGLE_CALENDAR_SYNC_INTERVALO_MS:300000}
+        atraso-inicial-ms: ${GOOGLE_CALENDAR_SYNC_ATRASO_INICIAL_MS:30000}
 
 server:
   port: ${SERVER_PORT:8080}

@@ -8,9 +8,12 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface AgendamentoRepository extends JpaRepository<Agendamento, Integer> {
     List<Agendamento> findAllByOrderByCriadoEmDesc();
+
+    Optional<Agendamento> findByGoogleEventId(String googleEventId);
 
     @Modifying(clearAutomatically = true)
     @Query("""

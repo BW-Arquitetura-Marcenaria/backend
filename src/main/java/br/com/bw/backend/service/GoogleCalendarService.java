@@ -3,17 +3,22 @@ package br.com.bw.backend.service;
 import br.com.bw.backend.config.CredenciaisGoogleCalendarService;
 import br.com.bw.backend.config.GoogleCalendarProperties;
 import br.com.bw.backend.dto.request.CriarEventoGoogleRequest;
+import br.com.bw.backend.dto.response.EventoAlteradoGoogleResponse;
 import br.com.bw.backend.dto.response.EventoGoogleResponse;
 import br.com.bw.backend.dto.response.GoogleCalendarResponse;
+import br.com.bw.backend.dto.response.ResultadoSincronizacaoGoogle;
 import br.com.bw.backend.exception.BusinessValidationException;
 import br.com.bw.backend.exception.GoogleCalendarDesconectadoException;
+import br.com.bw.backend.exception.GoogleCalendarSyncTokenInvalidoException;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.client.util.DateTime;
 import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.model.CalendarList;
 import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.EventDateTime;
+import com.google.api.services.calendar.model.Events;
 import com.google.auth.http.HttpCredentialsAdapter;
 import com.google.auth.oauth2.UserCredentials;
 import lombok.RequiredArgsConstructor;
@@ -22,8 +27,10 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -155,6 +162,81 @@ public class GoogleCalendarService {
         cliente.events()
                 .delete(properties.getCalendarId(), googleEventId)
                 .execute();
+    }
+
+    public ResultadoSincronizacaoGoogle sincronizarAlteracoes(String syncTokenAtual)
+            throws IOException, GeneralSecurityException {
+
+        Calendar cliente = obterCliente();
+
+        List<EventoAlteradoGoogleResponse> eventos = new ArrayList<>();
+        String pageToken = null;
+        String proximoSyncToken = null;
+
+        do {
+            Calendar.Events.List requisicao = cliente.events()
+                    .list(properties.getCalendarId())
+                    .setSingleEvents(true);
+
+            if (syncTokenAtual != null) {
+                requisicao.setSyncToken(syncTokenAtual);
+            }
+
+            if (pageToken != null) {
+                requisicao.setPageToken(pageToken);
+            }
+
+            Events pagina;
+            try {
+                pagina = requisicao.execute();
+            } catch (GoogleJsonResponseException e) {
+                if (e.getStatusCode() == 410) {
+                    throw new GoogleCalendarSyncTokenInvalidoException(
+                            "O syncToken do Google Calendar expirou; "
+                                    + "é necessário reiniciar a sincronização completa."
+                    );
+                }
+                throw e;
+            }
+
+            if (pagina.getItems() != null) {
+                for (Event evento : pagina.getItems()) {
+                    eventos.add(new EventoAlteradoGoogleResponse(
+                            evento.getId(),
+                            evento.getStatus(),
+                            converterParaLocalDateTime(evento.getStart()),
+                            converterParaLocalDateTime(evento.getEnd())
+                    ));
+                }
+            }
+
+            pageToken = pagina.getNextPageToken();
+
+            if (pagina.getNextSyncToken() != null) {
+                proximoSyncToken = pagina.getNextSyncToken();
+            }
+        } while (pageToken != null);
+
+        return new ResultadoSincronizacaoGoogle(eventos, proximoSyncToken);
+    }
+
+    private LocalDateTime converterParaLocalDateTime(EventDateTime dataEvento) {
+        if (dataEvento == null) {
+            return null;
+        }
+
+        DateTime dateTime = dataEvento.getDateTime() != null
+                ? dataEvento.getDateTime()
+                : dataEvento.getDate();
+
+        if (dateTime == null) {
+            return null;
+        }
+
+        return LocalDateTime.ofInstant(
+                Instant.ofEpochMilli(dateTime.getValue()),
+                ZoneId.of(properties.getTimezone())
+        );
     }
 
 }

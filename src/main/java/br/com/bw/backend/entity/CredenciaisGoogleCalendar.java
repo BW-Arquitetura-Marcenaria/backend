@@ -25,6 +25,9 @@ public class CredenciaisGoogleCalendar {
     @Column(name = "escopo", nullable = false, length = 500)
     private String escopo;
 
+    @Column(name = "sync_token", columnDefinition = "TEXT")
+    private String syncToken;
+
     @Column(name = "data_criacao", insertable = false, updatable = false)
     private LocalDateTime dataCriacao;
 

@@ -2,6 +2,7 @@ package br.com.bw.backend.service;
 
 import br.com.bw.backend.dto.request.CriarEventoGoogleRequest;
 import br.com.bw.backend.dto.request.SolicitacaoAgendamentoRequest;
+import br.com.bw.backend.dto.response.EventoAlteradoGoogleResponse;
 import br.com.bw.backend.dto.response.EventoGoogleResponse;
 import br.com.bw.backend.entity.Agendamento;
 import br.com.bw.backend.entity.Usuario;
@@ -217,6 +218,51 @@ public class AgendamentoService {
         agendamento.setObservacaoAdmin(observacao);
 
         return agendamento;
+    }
+
+    @Transactional
+    public void reconciliarComGoogle(EventoAlteradoGoogleResponse evento) {
+        agendamentoRepository.findByGoogleEventId(evento.id()).ifPresent(agendamento -> {
+            if (agendamento.getStatus() != StatusAgendamento.APROVADO) {
+                return;
+            }
+
+            if ("cancelled".equalsIgnoreCase(evento.status())) {
+                agendamento.setStatus(StatusAgendamento.CANCELADO);
+                agendamento.setObservacaoAdmin(anexarObservacao(
+                        agendamento.getObservacaoAdmin(),
+                        "Evento removido diretamente no Google Calendar."
+                ));
+                agendamentoRepository.save(agendamento);
+                log.info(
+                        "Agendamento {} marcado como CANCELADO: evento removido no Google Calendar.",
+                        agendamento.getId()
+                );
+                return;
+            }
+
+            boolean horarioAlterado = evento.inicio() != null && evento.fim() != null
+                    && (!evento.inicio().equals(agendamento.getInicio())
+                        || !evento.fim().equals(agendamento.getFim()));
+
+            if (horarioAlterado) {
+                agendamento.setInicio(evento.inicio());
+                agendamento.setFim(evento.fim());
+                agendamentoRepository.save(agendamento);
+                log.info(
+                        "Agendamento {} teve o horário atualizado a partir do Google Calendar.",
+                        agendamento.getId()
+                );
+            }
+        });
+    }
+
+    private String anexarObservacao(String existente, String nova) {
+        if (existente == null || existente.isBlank()) {
+            return nova;
+        }
+
+        return existente + " | " + nova;
     }
 }
 

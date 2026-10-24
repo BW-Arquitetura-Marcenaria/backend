@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class CredenciaisGoogleCalendarService {
@@ -52,6 +54,20 @@ public class CredenciaisGoogleCalendarService {
         return encryptionService.descriptografar(
                 credenciais.getTokenAtualizacaoCriptografado()
         );
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<String> obterSyncToken() {
+        return repository.findFirstByOrderByIdAsc()
+                .map(CredenciaisGoogleCalendar::getSyncToken);
+    }
+
+    @Transactional
+    public void salvarSyncToken(String syncToken) {
+        repository.findFirstByOrderByIdAsc().ifPresent(credenciais -> {
+            credenciais.setSyncToken(syncToken);
+            repository.save(credenciais);
+        });
     }
 }
 
