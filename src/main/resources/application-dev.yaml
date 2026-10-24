@@ -23,6 +23,13 @@ spring:
   flyway:
     enabled: true
 
+integracoes:
+  google:
+    calendar:
+      # Ambiente local usa HTTP, então o cookie Secure precisa ficar desligado
+      # para o navegador conseguir enviá-lo de volta no callback do OAuth.
+      cookie-secure: ${GOOGLE_OAUTH_COOKIE_SECURE:false}
+
 logging:
   level:
     root: INFO

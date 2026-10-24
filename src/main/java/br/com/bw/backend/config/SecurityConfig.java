@@ -8,8 +8,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,6 +20,8 @@ import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
+@EnableWebSecurity
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -51,8 +55,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/v1/projetos/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/v1/projetos/**").hasRole("ADMIN")
                         .requestMatchers("/v1/admin/**").hasRole("ADMIN")
-
                         .requestMatchers("/v1/chat/**").hasRole("CLIENTE")
+                        .requestMatchers("/login/oauth2/code/google").permitAll()
+                        .requestMatchers("/v1/api/admin/google-calendar/**").hasRole("ADMIN")
 
                         .anyRequest().authenticated()
                 )
