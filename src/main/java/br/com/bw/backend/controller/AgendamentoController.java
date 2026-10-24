@@ -1,10 +1,12 @@
 package br.com.bw.backend.controller;
 
+import br.com.bw.backend.dto.request.DecisaoAgendamentoRequest;
 import br.com.bw.backend.dto.request.SolicitacaoAgendamentoRequest;
 import br.com.bw.backend.dto.response.AgendamentoResponse;
 import br.com.bw.backend.entity.Agendamento;
 import br.com.bw.backend.mapper.AgendamentoMapper;
 import br.com.bw.backend.service.AgendamentoService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,7 +26,7 @@ public class AgendamentoController {
     @PostMapping
     public ResponseEntity<AgendamentoResponse> solicitar(
             Authentication authentication,
-            @RequestBody SolicitacaoAgendamentoRequest request
+            @RequestBody @Valid SolicitacaoAgendamentoRequest request
     ) {
         Integer usuarioId = (Integer) authentication.getPrincipal();
 
@@ -51,6 +53,34 @@ public class AgendamentoController {
                 .toList();
 
         return ResponseEntity.ok(respostas);
+    }
+
+    @PatchMapping("/{id}/aprovado")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<AgendamentoResponse> aprovar(
+            @PathVariable Integer id,
+            @Valid @RequestBody DecisaoAgendamentoRequest request
+    ) {
+        Agendamento agendamento = agendamentoService.aprovar(
+                id,
+                request.observacao()
+        );
+
+        return ResponseEntity.ok(agendamentoMapper.toResponse(agendamento));
+    }
+
+    @PatchMapping("/{id}/recusado")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<AgendamentoResponse> recusar(
+            @PathVariable Integer id,
+            @Valid @RequestBody DecisaoAgendamentoRequest request
+    ) {
+        Agendamento agendamento = agendamentoService.recusar(
+                id,
+                request.observacao()
+        );
+
+        return ResponseEntity.ok(agendamentoMapper.toResponse(agendamento));
     }
 }
 

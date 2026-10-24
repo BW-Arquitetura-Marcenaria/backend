@@ -74,5 +74,38 @@ public class AgendamentoService {
     public List<Agendamento> listarTodos() {
         return agendamentoRepository.findAllByOrderByCriadoEmDesc();
     }
+
+    @Transactional
+    public Agendamento aprovar(Integer agendamentoId, String observacao) {
+        Agendamento agendamento = buscarPendente(agendamentoId);
+
+        agendamento.setStatus(StatusAgendamento.APROVADO);
+        agendamento.setObservacaoAdmin(observacao);
+
+        return agendamentoRepository.save(agendamento);
+    }
+
+    @Transactional
+    public Agendamento recusar(Integer agendamentoId, String observacao) {
+        Agendamento agendamento = buscarPendente(agendamentoId);
+
+        agendamento.setStatus(StatusAgendamento.RECUSADO);
+        agendamento.setObservacaoAdmin(observacao);
+
+        return agendamentoRepository.save(agendamento);
+    }
+
+    private Agendamento buscarPendente(Integer agendamentoId) {
+        Agendamento agendamento = agendamentoRepository.findById(agendamentoId)
+                .orElseThrow(() ->
+                        new NotFoundException("Agendamento não encontrado."));
+
+        if (agendamento.getStatus() != StatusAgendamento.PENDENTE) {
+            throw new BusinessValidationException(
+                    "Somente agendamentos pendentes podem receber uma decisão.");
+        }
+
+        return agendamento;
+    }
 }
 
