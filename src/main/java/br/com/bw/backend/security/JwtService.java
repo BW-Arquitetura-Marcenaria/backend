@@ -16,8 +16,7 @@ import java.util.Optional;
 @Service
 public class JwtService {
 
-    /** Dados que o token carrega depois de validado. */
-    public record JwtPayload(Integer usuarioId, Perfil perfil) {}
+    public record JwtPayload(Integer usuarioId, Perfil perfil, Date expiraEm) {}
 
     private final SecretKey chave;
     private final long expiracaoMinutos;
@@ -58,7 +57,8 @@ public class JwtService {
 
             return Optional.of(new JwtPayload(
                     Integer.valueOf(claims.getSubject()),
-                    Perfil.valueOf(perfil)));
+                    Perfil.valueOf(perfil),
+                    claims.getExpiration()));
         } catch (JwtException | IllegalArgumentException e) {
             return Optional.empty();
         }
