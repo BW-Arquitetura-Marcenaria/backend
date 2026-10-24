@@ -41,23 +41,7 @@ public class AgendamentoService {
             LocalDateTime inicio,
             LocalDateTime fim
     ) {
-        if (titulo == null || titulo.isBlank()) {
-            throw new BusinessValidationException(
-                    "O título do agendamento é obrigatório."
-            );
-        }
-
-        if (inicio == null || fim == null) {
-            throw new BusinessValidationException(
-                    "A data de início e a data de fim são obrigatórias."
-            );
-        }
-
-        if (!fim.isAfter(inicio)) {
-            throw new BusinessValidationException(
-                    "O horário de fim deve ser posterior ao início."
-            );
-        }
+        validarPeriodo(titulo, inicio, fim);
 
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new NotFoundException(
@@ -77,6 +61,68 @@ public class AgendamentoService {
         agendamento.setStatus(StatusAgendamento.PENDENTE);
 
         return agendamentoRepository.save(agendamento);
+    }
+
+    @Transactional
+    public Agendamento criarEAprovarComoAdmin(
+            Integer adminUsuarioId,
+            String titulo,
+            String descricao,
+            LocalDateTime inicio,
+            LocalDateTime fim,
+            String observacao
+    ) {
+        validarPeriodo(titulo, inicio, fim);
+
+        Usuario admin = usuarioRepository.findById(adminUsuarioId)
+                .orElseThrow(() -> new NotFoundException(
+                        "Usuário não encontrado."
+                ));
+
+        Agendamento agendamento = agendamentoMapper.toEntity(
+                new SolicitacaoAgendamentoRequest(
+                        titulo,
+                        descricao,
+                        inicio,
+                        fim
+                )
+        );
+
+        agendamento.setUsuario(admin);
+        agendamento.setStatus(StatusAgendamento.PENDENTE);
+
+        String googleEventId = criarEventoNoGoogleCalendar(agendamento);
+
+        try {
+            agendamento.setStatus(StatusAgendamento.APROVADO);
+            agendamento.setObservacaoAdmin(observacao);
+            agendamento.setGoogleEventId(googleEventId);
+
+            return agendamentoRepository.saveAndFlush(agendamento);
+        } catch (RuntimeException e) {
+            compensarCriacaoDeEvento(googleEventId);
+            throw e;
+        }
+    }
+
+    private void validarPeriodo(String titulo, LocalDateTime inicio, LocalDateTime fim) {
+        if (titulo == null || titulo.isBlank()) {
+            throw new BusinessValidationException(
+                    "O título do agendamento é obrigatório."
+            );
+        }
+
+        if (inicio == null || fim == null) {
+            throw new BusinessValidationException(
+                    "A data de início e a data de fim são obrigatórias."
+            );
+        }
+
+        if (!fim.isAfter(inicio)) {
+            throw new BusinessValidationException(
+                    "O horário de fim deve ser posterior ao início."
+            );
+        }
     }
 
     @Transactional(readOnly = true)

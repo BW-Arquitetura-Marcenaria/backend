@@ -43,6 +43,28 @@ public class AgendamentoController {
         return ResponseEntity.status(201).body(response);
     }
 
+    @PostMapping("/admin")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<AgendamentoResponse> criarComoAdmin(
+            Authentication authentication,
+            @RequestBody @Valid SolicitacaoAgendamentoRequest request
+    ) {
+        Integer adminId = (Integer) authentication.getPrincipal();
+
+        Agendamento agendamento = agendamentoService.criarEAprovarComoAdmin(
+                adminId,
+                request.titulo(),
+                request.descricao(),
+                request.inicio(),
+                request.fim(),
+                "Criado diretamente pelo admin."
+        );
+
+        AgendamentoResponse response = agendamentoMapper.toResponse(agendamento);
+
+        return ResponseEntity.status(201).body(response);
+    }
+
     @GetMapping("/admin")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<AgendamentoResponse>> listarTodos() {
