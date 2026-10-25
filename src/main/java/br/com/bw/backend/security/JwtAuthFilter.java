@@ -1,6 +1,5 @@
 package br.com.bw.backend.security;
 
-import br.com.bw.backend.security.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

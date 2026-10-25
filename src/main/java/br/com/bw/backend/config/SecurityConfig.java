@@ -1,5 +1,7 @@
-package br.com.bw.backend.security;
+package br.com.bw.backend.config;
 
+import br.com.bw.backend.security.ApiKeyFilter;
+import br.com.bw.backend.security.JwtAuthFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -42,6 +44,9 @@ public class SecurityConfig {
                         .requestMatchers("/v1/api/cadastro/**", "/v1/api/auth/**", "/error").permitAll()
                         .requestMatchers("/v1/api/convite-admin/**").permitAll()
 
+                        // Handshake do WebSocket: a autenticacao e feita no CONNECT do STOMP (StompAuthInterceptor)
+                        .requestMatchers("/ws/**").permitAll()
+
                         .requestMatchers("/v1/api/integracoes/**").hasRole("INTEGRACAO")
 
                         .requestMatchers("/v1/rastreabilidades/**").hasRole("ADMIN")
@@ -50,7 +55,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/v1/projetos/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/v1/projetos/**").hasRole("ADMIN")
                         .requestMatchers("/v1/admin/**").hasRole("ADMIN")
-
+                        .requestMatchers("/v1/chat/**").hasRole("CLIENTE")
                         .requestMatchers("/login/oauth2/code/google").permitAll()
                         .requestMatchers("/v1/api/admin/google-calendar/**").hasRole("ADMIN")
 

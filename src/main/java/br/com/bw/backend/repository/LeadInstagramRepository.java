@@ -10,4 +10,6 @@ public interface LeadInstagramRepository extends JpaRepository<LeadInstagram, In
     Optional<LeadInstagram> findByInstagramId(String instagramId);
 
     Optional<LeadInstagram> findByTokenHash(String tokenHash);
+
+    Optional<LeadInstagram> findByUsuarioId(Integer usuarioId);
 }
