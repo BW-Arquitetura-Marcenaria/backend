@@ -13,8 +13,6 @@ import java.time.LocalDateTime;
 
 public record ReferenciaPutRequestDTO(
         @NotNull
-        Integer id,
-        @NotNull
         CategoriaReferencia categoria,
         @NotNull
         @PositiveOrZero
