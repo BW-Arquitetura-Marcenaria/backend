@@ -4,6 +4,7 @@ import br.com.bw.backend.dto.request.FinanceiroPostRequestDTO;
 import br.com.bw.backend.dto.request.FinanceiroPutRequestDTO;
 import br.com.bw.backend.dto.response.FinanceiroGetResponseDTO;
 import br.com.bw.backend.dto.response.FinanceiroKpiResponseDTO;
+import br.com.bw.backend.dto.response.FinanceiroReceitaDespesaMensalDTO;
 import br.com.bw.backend.mapper.FinanceiroMapper;
 import br.com.bw.backend.service.FinanceiroService;
 import jakarta.validation.Valid;
@@ -13,6 +14,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("v1/financeiros")
@@ -39,6 +42,13 @@ public class FinanceiroController {
     @GetMapping("/kpis")
     public ResponseEntity<FinanceiroKpiResponseDTO> getKpis() {
         return ResponseEntity.ok(financeiroService.getKpis());
+    }
+
+    @GetMapping("/receitas-despesas-mensal")
+    public ResponseEntity<List<FinanceiroReceitaDespesaMensalDTO>> getComparativoMensal(
+            @RequestParam(defaultValue = "6") Integer meses
+    ) {
+        return ResponseEntity.ok(financeiroService.getComparativoMensal(meses));
     }
 
     @GetMapping("/{id}")
