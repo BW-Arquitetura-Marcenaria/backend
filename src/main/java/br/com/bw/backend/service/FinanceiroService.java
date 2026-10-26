@@ -1,5 +1,6 @@
 package br.com.bw.backend.service;
 
+import br.com.bw.backend.dto.response.FinanceiroKpiResponseDTO;
 import br.com.bw.backend.entity.Financeiro;
 import br.com.bw.backend.exception.NotFoundException;
 import br.com.bw.backend.repository.FinanceiroRepository;
@@ -8,6 +9,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.YearMonth;
 
 @Service
 @Slf4j
@@ -46,5 +52,53 @@ public class FinanceiroService {
         var financeiro = findById(id);
         financeiroRepository.delete(financeiro);
         log.info("Registro financeiro removido com sucesso - id: {}", id);
+    }
+
+    public FinanceiroKpiResponseDTO getKpis() {
+        var mesAtual = YearMonth.now();
+        var mesAnterior = mesAtual.minusMonths(1);
+
+        var receitasMes = financeiroRepository.sumValorRecebidoFinalByDataPedidoBetween(
+                mesAtual.atDay(1), mesAtual.atEndOfMonth());
+        var receitasMesAnterior = financeiroRepository.sumValorRecebidoFinalByDataPedidoBetween(
+                mesAnterior.atDay(1), mesAnterior.atEndOfMonth());
+
+        var despesasMes = financeiroRepository.sumFreteByDataPedidoBetween(
+                mesAtual.atDay(1), mesAtual.atEndOfMonth());
+        var despesasMesAnterior = financeiroRepository.sumFreteByDataPedidoBetween(
+                mesAnterior.atDay(1), mesAnterior.atEndOfMonth());
+
+        var resultadoLiquido = receitasMes.subtract(despesasMes);
+        var margemPercentual = calcularPercentual(resultadoLiquido, receitasMes);
+
+        return new FinanceiroKpiResponseDTO(
+                receitasMes.setScale(2, RoundingMode.HALF_UP),
+                calcularVariacaoPercentual(receitasMes, receitasMesAnterior),
+                despesasMes.setScale(2, RoundingMode.HALF_UP),
+                calcularVariacaoPercentual(despesasMes, despesasMesAnterior),
+                resultadoLiquido.setScale(2, RoundingMode.HALF_UP),
+                margemPercentual
+        );
+    }
+
+    private BigDecimal calcularVariacaoPercentual(BigDecimal valorAtual, BigDecimal valorAnterior) {
+        if (valorAnterior.compareTo(BigDecimal.ZERO) == 0) {
+            return BigDecimal.ZERO;
+        }
+
+        return valorAtual.subtract(valorAnterior)
+                .divide(valorAnterior, 4, RoundingMode.HALF_UP)
+                .multiply(BigDecimal.valueOf(100))
+                .setScale(1, RoundingMode.HALF_UP);
+    }
+
+    private BigDecimal calcularPercentual(BigDecimal numerador, BigDecimal denominador) {
+        if (denominador.compareTo(BigDecimal.ZERO) == 0) {
+            return BigDecimal.ZERO;
+        }
+
+        return numerador.divide(denominador, 4, RoundingMode.HALF_UP)
+                .multiply(BigDecimal.valueOf(100))
+                .setScale(1, RoundingMode.HALF_UP);
     }
 }

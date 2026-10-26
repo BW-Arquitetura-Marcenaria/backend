@@ -3,6 +3,7 @@ package br.com.bw.backend.controller;
 import br.com.bw.backend.dto.request.FinanceiroPostRequestDTO;
 import br.com.bw.backend.dto.request.FinanceiroPutRequestDTO;
 import br.com.bw.backend.dto.response.FinanceiroGetResponseDTO;
+import br.com.bw.backend.dto.response.FinanceiroKpiResponseDTO;
 import br.com.bw.backend.mapper.FinanceiroMapper;
 import br.com.bw.backend.service.FinanceiroService;
 import jakarta.validation.Valid;
@@ -33,6 +34,11 @@ public class FinanceiroController {
         var response = mapper.toFinanceiroGetResponseDTO(financeiroFindAll);
 
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/kpis")
+    public ResponseEntity<FinanceiroKpiResponseDTO> getKpis() {
+        return ResponseEntity.ok(financeiroService.getKpis());
     }
 
     @GetMapping("/{id}")
