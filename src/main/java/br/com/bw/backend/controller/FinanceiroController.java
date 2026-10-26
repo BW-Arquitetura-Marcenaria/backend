@@ -4,9 +4,11 @@ import br.com.bw.backend.dto.request.FinanceiroPostRequestDTO;
 import br.com.bw.backend.dto.request.FinanceiroPutRequestDTO;
 import br.com.bw.backend.dto.response.FinanceiroGetResponseDTO;
 import br.com.bw.backend.dto.response.FinanceiroKpiResponseDTO;
+import br.com.bw.backend.dto.response.FinanceiroImportResultDTO;
 import br.com.bw.backend.dto.response.FinanceiroReceitaDespesaMensalDTO;
 import br.com.bw.backend.mapper.FinanceiroMapper;
 import br.com.bw.backend.service.FinanceiroExcelExportService;
+import br.com.bw.backend.service.FinanceiroExcelImportService;
 import br.com.bw.backend.service.FinanceiroService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -17,6 +19,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -26,11 +29,18 @@ import java.util.List;
 public class FinanceiroController {
     private final FinanceiroService financeiroService;
     private final FinanceiroExcelExportService financeiroExcelExportService;
+    private final FinanceiroExcelImportService financeiroExcelImportService;
     private final FinanceiroMapper mapper;
 
-    public FinanceiroController(FinanceiroService financeiroService, FinanceiroExcelExportService financeiroExcelExportService, FinanceiroMapper mapper) {
+    public FinanceiroController(
+            FinanceiroService financeiroService,
+            FinanceiroExcelExportService financeiroExcelExportService,
+            FinanceiroExcelImportService financeiroExcelImportService,
+            FinanceiroMapper mapper
+    ) {
         this.financeiroService = financeiroService;
         this.financeiroExcelExportService = financeiroExcelExportService;
+        this.financeiroExcelImportService = financeiroExcelImportService;
         this.mapper = mapper;
     }
 
@@ -93,6 +103,11 @@ public class FinanceiroController {
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + nomeArquivo + "\"")
                 .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
                 .body(excel);
+    }
+
+    @PostMapping("/import/excel")
+    public ResponseEntity<FinanceiroImportResultDTO> importarExcel(@RequestParam("arquivo") MultipartFile arquivo) {
+        return ResponseEntity.ok(financeiroExcelImportService.importarExcel(arquivo));
     }
 
     @DeleteMapping("/{id}")
