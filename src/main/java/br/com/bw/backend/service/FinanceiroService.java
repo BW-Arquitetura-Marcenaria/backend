@@ -1,6 +1,7 @@
 package br.com.bw.backend.service;
 
 import br.com.bw.backend.dto.response.FinanceiroKpiResponseDTO;
+import br.com.bw.backend.dto.response.FinanceiroReceitaDespesaMensalDTO;
 import br.com.bw.backend.entity.Financeiro;
 import br.com.bw.backend.exception.NotFoundException;
 import br.com.bw.backend.repository.FinanceiroRepository;
@@ -12,8 +13,10 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDate;
 import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -100,5 +103,32 @@ public class FinanceiroService {
         return numerador.divide(denominador, 4, RoundingMode.HALF_UP)
                 .multiply(BigDecimal.valueOf(100))
                 .setScale(1, RoundingMode.HALF_UP);
+    }
+
+    public List<FinanceiroReceitaDespesaMensalDTO> getComparativoMensal(int meses) {
+        if (meses < 1) {
+            meses = 1;
+        }
+
+        var mesAtual = YearMonth.now();
+        var formatter = DateTimeFormatter.ofPattern("yyyy-MM");
+        var comparativo = new ArrayList<FinanceiroReceitaDespesaMensalDTO>();
+
+        for (int i = meses - 1; i >= 0; i--) {
+            var mesReferencia = mesAtual.minusMonths(i);
+
+            var receitas = financeiroRepository.sumValorRecebidoFinalByDataPedidoBetween(
+                    mesReferencia.atDay(1), mesReferencia.atEndOfMonth());
+            var despesas = financeiroRepository.sumFreteByDataPedidoBetween(
+                    mesReferencia.atDay(1), mesReferencia.atEndOfMonth());
+
+            comparativo.add(new FinanceiroReceitaDespesaMensalDTO(
+                    mesReferencia.format(formatter),
+                    receitas.setScale(2, RoundingMode.HALF_UP),
+                    despesas.setScale(2, RoundingMode.HALF_UP)
+            ));
+        }
+
+        return comparativo;
     }
 }
