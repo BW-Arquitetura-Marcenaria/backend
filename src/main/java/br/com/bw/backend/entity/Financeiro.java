@@ -1,13 +1,10 @@
 package br.com.bw.backend.entity;
 
-import br.com.bw.backend.entity.enums.StatusTransacao;
-import br.com.bw.backend.entity.enums.TipoTransacao;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Entity
 @Builder
@@ -16,29 +13,51 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@Table(name = "fluxo_financeiro")
+@Table(name = "financeiro")
 public class Financeiro {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
     private Integer id;
 
+    private String descricao;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "tipo_transacao", nullable = false, length = 10)
-    private TipoTransacao tipoTransacao;
+    @Column(nullable = false)
+    private Integer quantidade;
+
     @Column(nullable = false)
     private BigDecimal valor;
-    @Column(name = "data_transacao", nullable = false)
-    private LocalDateTime dataTransacao;
-    @Column(length = 100)
-    private String categoria;
-    private String descricao;
-    @Enumerated(EnumType.STRING)
-    @Column(length = 20)
-    private StatusTransacao status;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "projeto_id", nullable = false)
-    private Projeto projeto;
+    @Column(nullable = false)
+    private BigDecimal frete;
+
+    @Column(name = "valor_total", nullable = false)
+    private BigDecimal valorTotal;
+
+    @Column(name = "valor_final_desconto")
+    private BigDecimal valorFinalDesconto;
+
+    @Column(name = "valor_entrada")
+    private BigDecimal valorEntrada;
+
+    @Column(name = "receber_entrega")
+    private BigDecimal receberEntrega;
+
+    @Column(name = "valor_recebido_final")
+    private BigDecimal valorRecebidoFinal;
+
+    @Column(name = "valor_total_liquido")
+    private BigDecimal valorTotalLiquido;
+
+    @Column(name = "data_pedido")
+    private LocalDate dataPedido;
+
+    @Column(name = "data_entrega")
+    private LocalDate dataEntrega;
+
+    @Column(name = "contato_cliente", length = 100)
+    private String contatoCliente;
+
+    @Column(name = "regiao_venda", length = 100)
+    private String regiaoVenda;
 }

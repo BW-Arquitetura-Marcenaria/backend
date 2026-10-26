@@ -1,19 +1,23 @@
 package br.com.bw.backend.dto.response;
 
-import br.com.bw.backend.entity.enums.StatusTransacao;
-import br.com.bw.backend.entity.enums.TipoTransacao;
-
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 public record FinanceiroGetResponseDTO(
         Integer id,
-        TipoTransacao tipoTransacao,
-        BigDecimal valor,
-        LocalDateTime dataTransacao,
-        String categoria,
         String descricao,
-        StatusTransacao status,
-        ProjetoGetResponseDTO projeto
+        Integer quantidade,
+        BigDecimal valor,
+        BigDecimal frete,
+        BigDecimal valorTotal,
+        BigDecimal valorFinalDesconto,
+        BigDecimal valorEntrada,
+        BigDecimal receberEntrega,
+        BigDecimal valorRecebidoFinal,
+        BigDecimal valorTotalLiquido,
+        LocalDate dataPedido,
+        LocalDate dataEntrega,
+        String contatoCliente,
+        String regiaoVenda
 ) {
 }

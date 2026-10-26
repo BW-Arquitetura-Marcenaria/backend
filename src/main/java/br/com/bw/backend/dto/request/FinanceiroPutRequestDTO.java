@@ -1,38 +1,44 @@
 package br.com.bw.backend.dto.request;
 
-import br.com.bw.backend.entity.Projeto;
-import br.com.bw.backend.entity.enums.StatusTransacao;
-import br.com.bw.backend.entity.enums.TipoTransacao;
-import jakarta.validation.constraints.FutureOrPresent;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import org.hibernate.validator.constraints.Length;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 public record FinanceiroPutRequestDTO(
         @NotNull
         Integer id,
-        @NotBlank
-        @Length(min = 0, max = 10)
-        TipoTransacao tipoTransacao,
+        String descricao,
+        @NotNull
+        @Positive
+        Integer quantidade,
         @NotNull
         @PositiveOrZero
         BigDecimal valor,
-        @NotBlank
-        @FutureOrPresent
-        LocalDateTime dataTransacao,
-        @NotBlank
-        @Length(min = 0, max = 100)
-        String categoria,
-        @NotBlank
-        String descricao,
-        @NotBlank
-        @Length(min = 0, max = 20)
-        StatusTransacao status,
-        @NotBlank
-        Projeto projeto
+        @NotNull
+        @PositiveOrZero
+        BigDecimal frete,
+        @NotNull
+        @PositiveOrZero
+        BigDecimal valorTotal,
+        @PositiveOrZero
+        BigDecimal valorFinalDesconto,
+        @PositiveOrZero
+        BigDecimal valorEntrada,
+        @PositiveOrZero
+        BigDecimal receberEntrega,
+        @PositiveOrZero
+        BigDecimal valorRecebidoFinal,
+        @PositiveOrZero
+        BigDecimal valorTotalLiquido,
+        LocalDate dataPedido,
+        LocalDate dataEntrega,
+        @Length(max = 100)
+        String contatoCliente,
+        @Length(max = 100)
+        String regiaoVenda
 ) {
 }
