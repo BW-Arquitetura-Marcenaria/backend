@@ -6,7 +6,7 @@ import br.com.bw.backend.entity.enums.TipoTransacao;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-public record FinanceiroGetResponseDTO(
+public record FluxoFinanceiroGetResponseDTO(
         Integer id,
         TipoTransacao tipoTransacao,
         BigDecimal valor,

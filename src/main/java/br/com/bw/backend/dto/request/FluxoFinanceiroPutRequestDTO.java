@@ -12,7 +12,7 @@ import org.hibernate.validator.constraints.Length;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-public record FinanceiroPutRequestDTO(
+public record FluxoFinanceiroPutRequestDTO(
         @NotNull
         Integer id,
         @NotBlank

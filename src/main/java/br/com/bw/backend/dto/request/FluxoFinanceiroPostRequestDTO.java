@@ -9,7 +9,7 @@ import org.hibernate.validator.constraints.Length;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-public record FinanceiroPostRequestDTO(
+public record FluxoFinanceiroPostRequestDTO(
         @NotBlank
         @Length(min = 0, max = 10)
         TipoTransacao tipoTransacao,
