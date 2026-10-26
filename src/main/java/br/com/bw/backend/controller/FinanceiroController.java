@@ -6,25 +6,31 @@ import br.com.bw.backend.dto.response.FinanceiroGetResponseDTO;
 import br.com.bw.backend.dto.response.FinanceiroKpiResponseDTO;
 import br.com.bw.backend.dto.response.FinanceiroReceitaDespesaMensalDTO;
 import br.com.bw.backend.mapper.FinanceiroMapper;
+import br.com.bw.backend.service.FinanceiroExcelExportService;
 import br.com.bw.backend.service.FinanceiroService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
 @RequestMapping("v1/financeiros")
 public class FinanceiroController {
     private final FinanceiroService financeiroService;
+    private final FinanceiroExcelExportService financeiroExcelExportService;
     private final FinanceiroMapper mapper;
 
-    public FinanceiroController(FinanceiroService financeiroService, FinanceiroMapper mapper) {
+    public FinanceiroController(FinanceiroService financeiroService, FinanceiroExcelExportService financeiroExcelExportService, FinanceiroMapper mapper) {
         this.financeiroService = financeiroService;
+        this.financeiroExcelExportService = financeiroExcelExportService;
         this.mapper = mapper;
     }
 
@@ -76,6 +82,17 @@ public class FinanceiroController {
         var response = mapper.toFinanceiroGetResponseDTO(financeiroUpdated);
 
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/export/excel")
+    public ResponseEntity<byte[]> exportarExcel() {
+        byte[] excel = financeiroExcelExportService.exportarExcel();
+        String nomeArquivo = "financeiro-" + LocalDate.now() + ".xlsx";
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + nomeArquivo + "\"")
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(excel);
     }
 
     @DeleteMapping("/{id}")
