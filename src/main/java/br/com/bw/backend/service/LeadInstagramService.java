@@ -79,6 +79,8 @@ public class LeadInstagramService {
         if (temTexto(dto.situacaoProjeto())) lead.setSituacaoProjeto(dto.situacaoProjeto());
         if (dto.precisaVisitaTecnica() != null) lead.setPrecisaVisitaTecnica(dto.precisaVisitaTecnica());
         if (temTexto(dto.resumoConversa())) lead.setResumoConversa(dto.resumoConversa());
+        if (dto.score() != null) lead.setScore(dto.score());
+        if (temTexto(dto.classificacao())) lead.setClassificacao(dto.classificacao().trim());
     }
 
     private boolean temTexto(String valor) {

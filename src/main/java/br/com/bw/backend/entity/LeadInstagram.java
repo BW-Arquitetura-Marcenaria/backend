@@ -43,6 +43,12 @@ public class LeadInstagram {
     @Column(name = "resumo_conversa", columnDefinition = "TEXT")
     private String resumoConversa;
 
+    @Column(name = "score")
+    private Integer score;
+
+    @Column(name = "classificacao", length = 20)
+    private String classificacao;
+
     @Column(name = "token_hash", length = 64)
     private String tokenHash;
 
