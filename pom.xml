@@ -37,6 +37,7 @@
         <poi.version>5.3.0</poi.version>
         <google-api-services-calendar.version>v3-rev20260925-2.0.0</google-api-services-calendar.version>
         <google-api-client.version>2.9.0</google-api-client.version>
+        <kotlin.version>2.4.0</kotlin.version>
     </properties>
 
     <dependencies>
@@ -254,7 +255,6 @@
                             </annotationProcessorPaths>
                         </configuration>
                     </execution>
-
                 </executions>
             </plugin>
 
