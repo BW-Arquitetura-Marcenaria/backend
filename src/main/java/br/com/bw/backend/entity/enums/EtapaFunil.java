@@ -9,7 +9,7 @@ public enum EtapaFunil {
     NOVO_LEAD("Novo Lead"),
     EM_QUALIFICACAO("Em Qualificacao"),
     QUALIFICADO("Qualificado"),
-    APRESENTACAO("Apresentacao"),
+    ORCAMENTO_ENVIADO("Orcamento Enviado"),
     EM_NEGOCIACAO("Em Negociacao"),
     FECHADO("Fechado");
 
