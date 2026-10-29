@@ -5,6 +5,7 @@ import br.com.bw.backend.dto.response.LeadInstagramPostResponseDTO;
 import br.com.bw.backend.service.LeadInstagramService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,8 +20,8 @@ public class LeadIntegracaoController {
     private final LeadInstagramService service;
 
     @PostMapping
-    public ResponseEntity<LeadInstagramPostResponseDTO> registrar(
+    public ResponseEntity<LeadInstagramPostResponseDTO> register(
             @Valid @RequestBody LeadInstagramPostRequestDTO dto) {
-        return ResponseEntity.ok(service.registrar(dto));
+        return ResponseEntity.status(HttpStatus.OK).body(service.register(dto));
     }
 }

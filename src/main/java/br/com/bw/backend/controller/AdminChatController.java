@@ -30,40 +30,40 @@ public class AdminChatController {
     private final ChatService service;
 
     @GetMapping("/conversas")
-    public List<ConversaChatGetResponseDTO> listarConversas(@AuthenticationPrincipal Integer adminId) {
-        return service.listarConversas(adminId);
+    public List<ConversaChatGetResponseDTO> listConversations(@AuthenticationPrincipal Integer adminId) {
+        return service.listConversations(adminId);
     }
 
     @GetMapping("/conversas/{clienteId}/mensagens")
-    public List<MensagemChatGetResponseDTO> historico(@AuthenticationPrincipal Integer adminId,
+    public List<MensagemChatGetResponseDTO> getHistory(@AuthenticationPrincipal Integer adminId,
                                                       @PathVariable Integer clienteId,
                                                       @RequestParam(defaultValue = "0") Integer depois) {
-        return service.historicoDoAdmin(adminId, clienteId, depois);
+        return service.getAdminHistory(adminId, clienteId, depois);
     }
 
     @PostMapping("/conversas/{clienteId}/mensagens")
     @ResponseStatus(HttpStatus.CREATED)
-    public MensagemChatGetResponseDTO responder(@AuthenticationPrincipal Integer adminId,
+    public MensagemChatGetResponseDTO reply(@AuthenticationPrincipal Integer adminId,
                                                 @PathVariable Integer clienteId,
                                                 @RequestBody @Valid MensagemChatPostRequestDTO dto) {
-        return service.responder(adminId, clienteId, dto);
+        return service.reply(adminId, clienteId, dto);
     }
 
     @GetMapping("/conversas/{clienteId}/resumo")
-    public ResumoAtendimentoGetResponseDTO resumo(@AuthenticationPrincipal Integer adminId,
+    public ResumoAtendimentoGetResponseDTO getSummary(@AuthenticationPrincipal Integer adminId,
                                                   @PathVariable Integer clienteId) {
-        return service.resumoDoAtendimento(adminId, clienteId);
+        return service.getAttendanceSummary(adminId, clienteId);
     }
 
     @GetMapping("/nao-lidas")
-    public NaoLidasGetResponseDTO naoLidas(@AuthenticationPrincipal Integer adminId) {
-        return service.naoLidasDoAdmin(adminId);
+    public NaoLidasGetResponseDTO getUnread(@AuthenticationPrincipal Integer adminId) {
+        return service.getAdminUnread(adminId);
     }
 
     @PutMapping("/conversas/{clienteId}/lidas")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void marcarComoLidas(@AuthenticationPrincipal Integer adminId,
+    public void markAsRead(@AuthenticationPrincipal Integer adminId,
                                 @PathVariable Integer clienteId) {
-        service.marcarComoLidasPeloAdmin(adminId, clienteId);
+        service.markAsReadByAdmin(adminId, clienteId);
     }
 }

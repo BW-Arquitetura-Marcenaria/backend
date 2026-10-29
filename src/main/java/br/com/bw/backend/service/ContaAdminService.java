@@ -21,8 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
+@Slf4j
 public class ContaAdminService {
 
     private final UsuarioRepository usuarioRepository;
@@ -30,30 +30,30 @@ public class ContaAdminService {
     private final PasswordEncoder passwordEncoder;
 
     @Transactional(readOnly = true)
-    public ContaAdminGetResponseDTO buscar() {
-        Usuario admin = adminLogado();
-        return montarResposta(empresaDe(admin));
+    public ContaAdminGetResponseDTO find() {
+        Usuario admin = loggedInAdmin();
+        return buildResponse(companyOf(admin));
     }
 
     @Transactional
-    public ContaAdminGetResponseDTO atualizarEmpresa(ContaAdminEmpresaPutRequestDTO dto) {
-        Usuario admin = adminLogado();
-        Empresa empresa = empresaDe(admin);
+    public ContaAdminGetResponseDTO updateCompany(ContaAdminEmpresaPutRequestDTO dto) {
+        Usuario admin = loggedInAdmin();
+        Empresa empresa = companyOf(admin);
 
         empresa.setRazaoSocial(dto.nome().trim());
-        empresa.setNomeFantasia(vazio(dto.nomeFantasia()) ? null : dto.nomeFantasia().trim());
+        empresa.setNomeFantasia(isBlank(dto.nomeFantasia()) ? null : dto.nomeFantasia().trim());
         empresa.setTelefone(dto.telefone().trim());
 
         log.info("Dados da empresa atualizados - empresa: {}, admin: {}", empresa.getId(), admin.getId());
-        return montarResposta(empresa);
+        return buildResponse(empresa);
     }
 
     @Transactional
-    public ContaAdminGetResponseDTO atualizarEndereco(ContaAdminEnderecoPutRequestDTO dto) {
-        Usuario admin = adminLogado();
-        Empresa empresa = empresaDe(admin);
+    public ContaAdminGetResponseDTO updateAddress(ContaAdminEnderecoPutRequestDTO dto) {
+        Usuario admin = loggedInAdmin();
+        Empresa empresa = companyOf(admin);
 
-        String cep = somenteDigitos(dto.cep());
+        String cep = onlyDigits(dto.cep());
         if (cep.length() != 8) {
             throw new BusinessValidationException("CEP inválido");
         }
@@ -67,22 +67,22 @@ public class ContaAdminService {
         endereco.setCep(cep);
         endereco.setLogradouro(dto.logradouro().trim());
         endereco.setNumero(dto.numero().trim());
-        endereco.setComplemento(vazio(dto.complemento()) ? null : dto.complemento().trim());
+        endereco.setComplemento(isBlank(dto.complemento()) ? null : dto.complemento().trim());
         endereco.setBairro(dto.bairro().trim());
         endereco.setCidade(dto.cidade().trim());
         endereco.setUf(uf);
         enderecoRepository.save(endereco);
 
         log.info("Endereço atualizado - empresa: {}", empresa.getId());
-        return montarResposta(empresa);
+        return buildResponse(empresa);
     }
 
     @Transactional
-    public void alterarSenha(ContaAdminSegurancaPutRequestDTO dto) {
-        Usuario admin = adminLogado();
-        Empresa empresa = empresaDe(admin);
+    public void changePassword(ContaAdminSegurancaPutRequestDTO dto) {
+        Usuario admin = loggedInAdmin();
+        Empresa empresa = companyOf(admin);
 
-        if (!somenteDigitos(dto.cnpj()).equals(somenteDigitos(empresa.getCnpj()))) {
+        if (!onlyDigits(dto.cnpj()).equals(onlyDigits(empresa.getCnpj()))) {
             log.warn("Troca de senha negada - CNPJ não confere: admin {}", admin.getId());
             throw new BusinessValidationException("CNPJ não confere com o da empresa");
         }
@@ -104,7 +104,7 @@ public class ContaAdminService {
         log.info("Senha do admin alterada - id: {}", admin.getId());
     }
 
-    private ContaAdminGetResponseDTO montarResposta(Empresa empresa) {
+    private ContaAdminGetResponseDTO buildResponse(Empresa empresa) {
         var dadosEmpresa = new ContaAdminGetResponseDTO.EmpresaDados(
                 empresa.getRazaoSocial(),
                 empresa.getNomeFantasia(),
@@ -120,7 +120,7 @@ public class ContaAdminService {
         return new ContaAdminGetResponseDTO(dadosEmpresa, dadosEndereco);
     }
 
-    private Usuario adminLogado() {
+    private Usuario loggedInAdmin() {
         Usuario usuario = usuarioRepository.findById(UsuarioLogado.id())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
         if (usuario.getPerfil() != Perfil.ADMIN) {
@@ -129,7 +129,7 @@ public class ContaAdminService {
         return usuario;
     }
 
-    private Empresa empresaDe(Usuario admin) {
+    private Empresa companyOf(Usuario admin) {
         if (admin.getEmpresa() == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,
                     "Nenhuma empresa vinculada a este administrador");
@@ -137,11 +137,11 @@ public class ContaAdminService {
         return admin.getEmpresa();
     }
 
-    private String somenteDigitos(String valor) {
+    private String onlyDigits(String valor) {
         return valor == null ? "" : valor.replaceAll("\\D", "");
     }
 
-    private boolean vazio(String valor) {
+    private boolean isBlank(String valor) {
         return valor == null || valor.isBlank();
     }
 }

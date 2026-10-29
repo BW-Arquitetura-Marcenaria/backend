@@ -11,5 +11,5 @@ public interface MinhaContaMapper {
 
     MinhaContaGetResponseDTO toResponse(Usuario usuario);
 
-    MinhaContaGetResponseDTO.EmpresaResumo toEmpresaResumo(Empresa empresa);
+    MinhaContaGetResponseDTO.EmpresaResumo toCompanySummary(Empresa empresa);
 }

@@ -14,7 +14,7 @@ public interface CadastroMapper {
 
     CadastroGetResponseDTO toResponse(Usuario usuario);
 
-    CadastroValidarGetResponseDTO toValidarResponse(LeadInstagram lead);
+    CadastroValidarGetResponseDTO toValidateResponse(LeadInstagram lead);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "etapaFunil", ignore = true)

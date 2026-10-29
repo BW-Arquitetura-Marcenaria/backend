@@ -19,8 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
+@Slf4j
 public class MinhaContaService {
 
     private final UsuarioRepository usuarioRepository;
@@ -28,13 +28,13 @@ public class MinhaContaService {
     private final MinhaContaMapper mapper;
 
     @Transactional(readOnly = true)
-    public MinhaContaGetResponseDTO buscar() {
-        return mapper.toResponse(usuarioLogado());
+    public MinhaContaGetResponseDTO find() {
+        return mapper.toResponse(loggedInUser());
     }
 
     @Transactional
-    public MinhaContaGetResponseDTO atualizar(MinhaContaPutRequestDTO dto) {
-        Usuario usuario = usuarioLogado();
+    public MinhaContaGetResponseDTO update(MinhaContaPutRequestDTO dto) {
+        Usuario usuario = loggedInUser();
         String email = dto.email().trim().toLowerCase();
 
         if (!email.equals(usuario.getEmail()) && usuarioRepository.existsByEmail(email)) {
@@ -44,28 +44,28 @@ public class MinhaContaService {
 
         boolean admin = usuario.getPerfil() == Perfil.ADMIN;
         Empresa empresa = admin ? null : usuario.getEmpresa();
-        if (empresa != null && vazio(dto.razaoSocial())) {
+        if (empresa != null && isBlank(dto.razaoSocial())) {
             throw new BusinessValidationException("Razão social é obrigatória");
         }
 
-        boolean trocaSenha = !vazio(dto.senhaAtual()) || !vazio(dto.novaSenha()) || !vazio(dto.confirmarNovaSenha());
+        boolean trocaSenha = !isBlank(dto.senhaAtual()) || !isBlank(dto.novaSenha()) || !isBlank(dto.confirmarNovaSenha());
         if (trocaSenha) {
             if (admin) {
                 throw new BusinessValidationException(
                         "A senha da conta administrativa é alterada em Segurança e avisos");
             }
-            aplicarNovaSenha(usuario, dto.senhaAtual(), dto.novaSenha(), dto.confirmarNovaSenha());
+            applyNewPassword(usuario, dto.senhaAtual(), dto.novaSenha(), dto.confirmarNovaSenha());
         }
 
         usuario.setNome(dto.nome().trim());
         usuario.setSobrenome(dto.sobrenome().trim());
         usuario.setEmail(email);
-        usuario.setOrigemContato(vazio(dto.origemContato()) ? null : dto.origemContato().trim());
-        usuario.setInstagramUsername(normalizarInstagram(dto.instagramUsername()));
+        usuario.setOrigemContato(isBlank(dto.origemContato()) ? null : dto.origemContato().trim());
+        usuario.setInstagramUsername(normalizeInstagram(dto.instagramUsername()));
 
         if (empresa != null) {
             empresa.setRazaoSocial(dto.razaoSocial().trim());
-            empresa.setNomeFantasia(vazio(dto.nomeFantasia()) ? null : dto.nomeFantasia().trim());
+            empresa.setNomeFantasia(isBlank(dto.nomeFantasia()) ? null : dto.nomeFantasia().trim());
             empresa.setTelefone(dto.telefone().trim());
         } else {
             usuario.setDataNascimento(dto.dataNascimento());
@@ -76,8 +76,8 @@ public class MinhaContaService {
         return mapper.toResponse(usuario);
     }
 
-    private void aplicarNovaSenha(Usuario usuario, String senhaAtual, String novaSenha, String confirmarNovaSenha) {
-        if (vazio(senhaAtual) || vazio(novaSenha) || vazio(confirmarNovaSenha)) {
+    private void applyNewPassword(Usuario usuario, String senhaAtual, String novaSenha, String confirmarNovaSenha) {
+        if (isBlank(senhaAtual) || isBlank(novaSenha) || isBlank(confirmarNovaSenha)) {
             throw new BusinessValidationException(
                     "Para trocar a senha, preencha a senha atual, a nova senha e a confirmação");
         }
@@ -98,13 +98,13 @@ public class MinhaContaService {
         usuario.setSenhaHash(passwordEncoder.encode(novaSenha));
     }
 
-    private Usuario usuarioLogado() {
+    private Usuario loggedInUser() {
         return usuarioRepository.findById(UsuarioLogado.id())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
     }
 
-    private String normalizarInstagram(String valor) {
-        if (vazio(valor)) {
+    private String normalizeInstagram(String valor) {
+        if (isBlank(valor)) {
             return null;
         }
         String username = valor.trim();
@@ -114,7 +114,7 @@ public class MinhaContaService {
         return username.isEmpty() ? null : username;
     }
 
-    private boolean vazio(String valor) {
+    private boolean isBlank(String valor) {
         return valor == null || valor.isBlank();
     }
 }

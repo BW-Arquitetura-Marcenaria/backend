@@ -27,26 +27,26 @@ public class ChatController {
     private final ChatService service;
 
     @GetMapping("/mensagens")
-    public List<MensagemChatGetResponseDTO> historico(@AuthenticationPrincipal Integer usuarioId,
+    public List<MensagemChatGetResponseDTO> getHistory(@AuthenticationPrincipal Integer usuarioId,
                                                       @RequestParam(defaultValue = "0") Integer depois) {
-        return service.historicoDoCliente(usuarioId, depois);
+        return service.getClientHistory(usuarioId, depois);
     }
 
     @PostMapping("/mensagens")
     @ResponseStatus(HttpStatus.CREATED)
-    public MensagemChatGetResponseDTO enviar(@AuthenticationPrincipal Integer usuarioId,
+    public MensagemChatGetResponseDTO send(@AuthenticationPrincipal Integer usuarioId,
                                              @RequestBody @Valid MensagemChatPostRequestDTO dto) {
-        return service.enviarComoCliente(usuarioId, dto);
+        return service.sendAsClient(usuarioId, dto);
     }
 
     @GetMapping("/nao-lidas")
-    public NaoLidasGetResponseDTO naoLidas(@AuthenticationPrincipal Integer usuarioId) {
-        return service.naoLidasDoCliente(usuarioId);
+    public NaoLidasGetResponseDTO getUnread(@AuthenticationPrincipal Integer usuarioId) {
+        return service.getClientUnread(usuarioId);
     }
 
     @PutMapping("/mensagens/lidas")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void marcarComoLidas(@AuthenticationPrincipal Integer usuarioId) {
-        service.marcarComoLidasPeloCliente(usuarioId);
+    public void markAsRead(@AuthenticationPrincipal Integer usuarioId) {
+        service.markAsReadByClient(usuarioId);
     }
 }

@@ -30,8 +30,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
+@Slf4j
 public class ConviteAdminService {
 
     private static final String TIPO_USUARIO = "USUARIO";
@@ -47,9 +47,9 @@ public class ConviteAdminService {
     private int expiracaoHoras;
 
     @Transactional(readOnly = true)
-    public AdministradoresGetResponseDTO listar(Integer usuarioId) {
-        Usuario admin = adminLogado(usuarioId);
-        Empresa empresa = empresaDe(admin);
+    public AdministradoresGetResponseDTO findAll(Integer usuarioId) {
+        Usuario admin = loggedInAdmin(usuarioId);
+        Empresa empresa = companyOf(admin);
 
         List<Usuario> admins = usuarioRepository
                 .findByEmpresaIdAndPerfilOrderByIdAsc(empresa.getId(), Perfil.ADMIN);
@@ -65,7 +65,7 @@ public class ConviteAdminService {
             itens.add(new AdministradorItem(
                     u.getId(),
                     TIPO_USUARIO,
-                    nomeCompleto(u),
+                    fullName(u),
                     u.getEmail(),
                     u.getCpf(),
                     ativo ? "ATIVO" : "DESATIVADO"));
@@ -76,21 +76,21 @@ public class ConviteAdminService {
                 .findByEmpresaIdAndStatusOrderByCriadoEmDesc(empresa.getId(), StatusConvite.PENDENTE)
                 .stream()
                 .filter(c -> c.getExpiraEm().isAfter(agora))
-                .forEach(c -> itens.add(itemDoConvite(c)));
+                .forEach(c -> itens.add(inviteItem(c)));
 
         return new AdministradoresGetResponseDTO(ativos, itens);
     }
 
     @Transactional
-    public AdministradorItem convidar(Integer usuarioId, ConviteAdminPostRequestDTO dto) {
-        Usuario admin = adminLogado(usuarioId);
-        Empresa empresa = empresaDe(admin);
+    public AdministradorItem invite(Integer usuarioId, ConviteAdminPostRequestDTO dto) {
+        Usuario admin = loggedInAdmin(usuarioId);
+        Empresa empresa = companyOf(admin);
 
-        encerrarConvitesVencidos();
+        closeExpiredInvites();
 
         String nomeCompleto = dto.nomeCompleto().trim().replaceAll("\\s+", " ");
         String email = dto.email().trim().toLowerCase();
-        String cpf = somenteDigitos(dto.cpf());
+        String cpf = onlyDigits(dto.cpf());
 
         if (!nomeCompleto.contains(" ")) {
             throw new BusinessValidationException("Informe nome e sobrenome");
@@ -113,7 +113,7 @@ public class ConviteAdminService {
             throw new ConflictException("Já existe um convite pendente para este CPF");
         }
 
-        String token = tokenService.gerar();
+        String token = tokenService.generate();
 
         ConviteAdmin convite = conviteRepository.save(ConviteAdmin.builder()
                 .empresa(empresa)
@@ -125,16 +125,15 @@ public class ConviteAdminService {
                 .convidadoPor(admin.getId())
                 .build());
 
-        // Se o envio falhar, a exceção desfaz a transação e o convite não fica gravado
-        emailService.enviarConviteAdmin(email, nomeCompleto, nomeDaEmpresa(empresa), token);
+        emailService.sendAdminInvite(email, nomeCompleto, nomeDaEmpresa(empresa), token);
 
         log.info("Convite de administrador enviado - id: {}", convite.getId());
-        return itemDoConvite(convite);
+        return inviteItem(convite);
     }
 
     @Transactional(readOnly = true)
-    public ConviteAdminValidacaoGetResponseDTO validar(String token) {
-        ConviteAdmin convite = buscarConviteValido(token);
+    public ConviteAdminValidacaoGetResponseDTO validate(String token) {
+        ConviteAdmin convite = findValidInvite(token);
         return new ConviteAdminValidacaoGetResponseDTO(
                 convite.getNomeCompleto(),
                 convite.getEmail(),
@@ -143,12 +142,12 @@ public class ConviteAdminService {
     }
 
     @Transactional
-    public void aceitar(ConviteAdminAceitarPostRequestDTO dto) {
+    public void accept(ConviteAdminAceitarPostRequestDTO dto) {
         if (!dto.senha().equals(dto.confirmarSenha())) {
             throw new BusinessValidationException("As senhas não conferem");
         }
 
-        ConviteAdmin convite = buscarConviteValido(dto.token());
+        ConviteAdmin convite = findValidInvite(dto.token());
 
         if (usuarioRepository.existsByEmail(convite.getEmail())) {
             throw new ConflictException("E-mail já cadastrado");
@@ -181,8 +180,8 @@ public class ConviteAdminService {
     }
 
     @Transactional
-    public void recusar(ConviteAdminRecusarPostRequestDTO dto) {
-        ConviteAdmin convite = buscarConviteValido(dto.token());
+    public void reject(ConviteAdminRecusarPostRequestDTO dto) {
+        ConviteAdmin convite = findValidInvite(dto.token());
 
         convite.setStatus(StatusConvite.RECUSADO);
         convite.setRespondidoEm(LocalDateTime.now());
@@ -191,9 +190,9 @@ public class ConviteAdminService {
     }
 
     @Transactional
-    public void desativar(Integer usuarioId, Integer alvoId) {
-        Usuario admin = adminLogado(usuarioId);
-        Empresa empresa = empresaDe(admin);
+    public void deactivate(Integer usuarioId, Integer alvoId) {
+        Usuario admin = loggedInAdmin(usuarioId);
+        Empresa empresa = companyOf(admin);
 
         Usuario alvo = usuarioRepository.findById(alvoId)
                 .filter(u -> u.getPerfil() == Perfil.ADMIN)
@@ -218,28 +217,28 @@ public class ConviteAdminService {
         log.info("Administrador desativado - id: {} por: {}", alvo.getId(), admin.getId());
     }
 
-    private ConviteAdmin buscarConviteValido(String token) {
+    private ConviteAdmin findValidInvite(String token) {
         ConviteAdmin convite = conviteRepository.findByTokenHash(tokenService.hash(token))
-                .orElseThrow(this::conviteInvalido);
+                .orElseThrow(this::invalidInvite);
 
         if (convite.getStatus() != StatusConvite.PENDENTE
                 || convite.getExpiraEm().isBefore(LocalDateTime.now())) {
-            throw conviteInvalido();
+            throw invalidInvite();
         }
         return convite;
     }
 
-    private ResponseStatusException conviteInvalido() {
+    private ResponseStatusException invalidInvite() {
         log.warn("Convite de administrador inválido, respondido ou expirado");
         return new ResponseStatusException(HttpStatus.BAD_REQUEST, "Convite inválido ou expirado");
     }
 
-    private void encerrarConvitesVencidos() {
+    private void closeExpiredInvites() {
         conviteRepository.findByStatusAndExpiraEmBefore(StatusConvite.PENDENTE, LocalDateTime.now())
                 .forEach(c -> c.setStatus(StatusConvite.REVOGADO));
     }
 
-    private Usuario adminLogado(Integer usuarioId) {
+    private Usuario loggedInAdmin(Integer usuarioId) {
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Acesso negado"));
         if (usuario.getPerfil() != Perfil.ADMIN) {
@@ -248,7 +247,7 @@ public class ConviteAdminService {
         return usuario;
     }
 
-    private Empresa empresaDe(Usuario admin) {
+    private Empresa companyOf(Usuario admin) {
         if (admin.getEmpresa() == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,
                     "Nenhuma empresa vinculada a este administrador");
@@ -256,7 +255,7 @@ public class ConviteAdminService {
         return admin.getEmpresa();
     }
 
-    private AdministradorItem itemDoConvite(ConviteAdmin c) {
+    private AdministradorItem inviteItem(ConviteAdmin c) {
         return new AdministradorItem(
                 c.getId(),
                 TIPO_CONVITE,
@@ -266,20 +265,20 @@ public class ConviteAdminService {
                 "CONVITE_ENVIADO");
     }
 
-    private String nomeCompleto(Usuario u) {
+    private String fullName(Usuario u) {
         String sobrenome = u.getSobrenome() == null ? "" : u.getSobrenome();
         return (u.getNome() + " " + sobrenome).trim();
     }
 
     private String nomeDaEmpresa(Empresa empresa) {
-        return vazio(empresa.getNomeFantasia()) ? empresa.getRazaoSocial() : empresa.getNomeFantasia();
+        return isBlank(empresa.getNomeFantasia()) ? empresa.getRazaoSocial() : empresa.getNomeFantasia();
     }
 
-    private String somenteDigitos(String valor) {
+    private String onlyDigits(String valor) {
         return valor == null ? "" : valor.replaceAll("\\D", "");
     }
 
-    private boolean vazio(String valor) {
+    private boolean isBlank(String valor) {
         return valor == null || valor.isBlank();
     }
 }

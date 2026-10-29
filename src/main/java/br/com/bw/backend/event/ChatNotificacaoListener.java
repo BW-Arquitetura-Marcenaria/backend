@@ -12,9 +12,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
-@Slf4j
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class ChatNotificacaoListener {
 
     private final UsuarioRepository usuarioRepository;
@@ -22,41 +22,41 @@ public class ChatNotificacaoListener {
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void aoCriarMensagem(MensagemChatCriadaEvent evento) {
+    public void onMessageCreated(MensagemChatCriadaEvent evento) {
         if (!evento.primeiraNaoLida()) {
             return;
         }
 
         usuarioRepository.findById(evento.clienteId()).ifPresent(cliente -> {
             if (evento.remetente() == RemetenteChat.CLIENTE) {
-                avisarEquipe(cliente);
+                notifyTeam(cliente);
             } else {
-                avisarCliente(cliente);
+                notifyClient(cliente);
             }
         });
     }
 
-    private void avisarEquipe(Usuario cliente) {
-        String nome = nomeCompleto(cliente);
+    private void notifyTeam(Usuario cliente) {
+        String nome = fullName(cliente);
 
         for (Usuario admin : usuarioRepository.findByPerfilAndAtivoTrue(Perfil.ADMIN)) {
             try {
-                emailService.enviarAvisoNovaMensagemParaEquipe(admin.getEmail(), nome);
+                emailService.sendNewMessageAlertToTeam(admin.getEmail(), nome);
             } catch (Exception e) {
                 log.warn("Aviso de mensagem não enviado ao administrador id: {}", admin.getId());
             }
         }
     }
 
-    private void avisarCliente(Usuario cliente) {
+    private void notifyClient(Usuario cliente) {
         try {
-            emailService.enviarAvisoRespostaParaCliente(cliente.getEmail(), cliente.getNome());
+            emailService.sendReplyAlertToClient(cliente.getEmail(), cliente.getNome());
         } catch (Exception e) {
             log.warn("Aviso de resposta não enviado ao cliente id: {}", cliente.getId());
         }
     }
 
-    private String nomeCompleto(Usuario u) {
+    private String fullName(Usuario u) {
         String sobrenome = u.getSobrenome() == null ? "" : u.getSobrenome();
         return (u.getNome() + " " + sobrenome).trim();
     }

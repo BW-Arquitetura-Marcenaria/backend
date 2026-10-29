@@ -25,21 +25,21 @@ public class AdministradorController {
     private final ConviteAdminService service;
 
     @GetMapping
-    public AdministradoresGetResponseDTO listar(@AuthenticationPrincipal Integer usuarioId) {
-        return service.listar(usuarioId);
+    public AdministradoresGetResponseDTO findAll(@AuthenticationPrincipal Integer usuarioId) {
+        return service.findAll(usuarioId);
     }
 
     @PostMapping("/convites")
     @ResponseStatus(HttpStatus.CREATED)
-    public AdministradorItem convidar(@AuthenticationPrincipal Integer usuarioId,
+    public AdministradorItem invite(@AuthenticationPrincipal Integer usuarioId,
                                       @RequestBody @Valid ConviteAdminPostRequestDTO dto) {
-        return service.convidar(usuarioId, dto);
+        return service.invite(usuarioId, dto);
     }
 
     @PutMapping("/{id}/desativar")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void desativar(@AuthenticationPrincipal Integer usuarioId,
+    public void deactivate(@AuthenticationPrincipal Integer usuarioId,
                           @PathVariable Integer id) {
-        service.desativar(usuarioId, id);
+        service.deactivate(usuarioId, id);
     }
 }

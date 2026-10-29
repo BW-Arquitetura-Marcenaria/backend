@@ -4,6 +4,7 @@ import br.com.bw.backend.dto.request.ChatLogPostRequestDTO;
 import br.com.bw.backend.service.ChatLogService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,8 +19,8 @@ public class ChatLogIntegracaoController {
     private final ChatLogService chatLogService;
 
     @PostMapping
-    public ResponseEntity<Void> registrar(@Valid @RequestBody ChatLogPostRequestDTO dto) {
-        chatLogService.registrarInstagram(dto);
-        return ResponseEntity.status(201).build();
+    public ResponseEntity<Void> register(@Valid @RequestBody ChatLogPostRequestDTO dto) {
+        chatLogService.register(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 }

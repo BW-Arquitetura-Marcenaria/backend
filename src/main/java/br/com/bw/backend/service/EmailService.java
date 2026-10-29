@@ -15,9 +15,9 @@ import org.springframework.web.util.HtmlUtils;
 
 import java.io.UnsupportedEncodingException;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class EmailService {
 
     private final JavaMailSender mailSender;
@@ -34,9 +34,7 @@ public class EmailService {
     @Value("${app.convite-admin.expiracao-horas}")
     private int expiracaoHoras;
 
-    // ---------- Convite de administrador ----------
-
-    public void enviarConviteAdmin(String destinatario, String nomeCompleto, String nomeEmpresa, String token) {
+    public void sendAdminInvite(String destinatario, String nomeCompleto, String nomeEmpresa, String token) {
         String link = baseUrl + "/convite-admin?token=" + token;
 
         String nome = HtmlUtils.htmlEscape(nomeCompleto);
@@ -68,12 +66,10 @@ public class EmailService {
                 </div>
                 """.formatted(empresa, nome, empresa, link, link, expiracaoHoras);
 
-        enviar(destinatario, nomeEmpresa, "Convite para administrar a " + nomeEmpresa, html);
+        send(destinatario, nomeEmpresa, "Convite para administrar a " + nomeEmpresa, html);
     }
 
-    // ---------- Avisos do chat ----------
-
-    public void enviarAvisoNovaMensagemParaEquipe(String destinatario, String nomeCliente) {
+    public void sendNewMessageAlertToTeam(String destinatario, String nomeCliente) {
         String cliente = HtmlUtils.htmlEscape(nomeCliente);
         String link = baseUrl + "/admin/chat";
 
@@ -94,10 +90,10 @@ public class EmailService {
                 </div>
                 """.formatted(cliente, link);
 
-        enviar(destinatario, nomeRemetente, "Nova mensagem de " + nomeCliente, html);
+        send(destinatario, nomeRemetente, "Nova mensagem de " + nomeCliente, html);
     }
 
-    public void enviarAvisoRespostaParaCliente(String destinatario, String nomeCliente) {
+    public void sendReplyAlertToClient(String destinatario, String nomeCliente) {
         String cliente = HtmlUtils.htmlEscape(nomeCliente);
         String empresa = HtmlUtils.htmlEscape(nomeRemetente);
         String link = baseUrl + "/chat";
@@ -117,12 +113,10 @@ public class EmailService {
                 </div>
                 """.formatted(cliente, empresa, link);
 
-        enviar(destinatario, nomeRemetente, "Você tem uma resposta da " + nomeRemetente, html);
+        send(destinatario, nomeRemetente, "Você tem uma resposta da " + nomeRemetente, html);
     }
 
-    // ---------- Envio ----------
-
-    private void enviar(String destinatario, String nomeExibido, String assunto, String html) {
+    private void send(String destinatario, String nomeExibido, String assunto, String html) {
         try {
             MimeMessage mensagem = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mensagem, "UTF-8");

@@ -26,8 +26,8 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDateTime;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
+@Slf4j
 public class CadastroService {
 
     private final LeadInstagramRepository leadRepository;
@@ -39,17 +39,17 @@ public class CadastroService {
     private final CadastroMapper mapper;
 
     @Transactional(readOnly = true)
-    public CadastroValidarGetResponseDTO validar(String token) {
-        return mapper.toValidarResponse(buscarLeadValido(token));
+    public CadastroValidarGetResponseDTO validate(String token) {
+        return mapper.toValidateResponse(findValidLead(token));
     }
 
     @Transactional
-    public CadastroGetResponseDTO cadastrar(CadastroPostRequestDTO dto) {
-        LeadInstagram lead = buscarLeadValido(dto.token());
+    public CadastroGetResponseDTO register(CadastroPostRequestDTO dto) {
+        LeadInstagram lead = findValidLead(dto.token());
 
         String email = dto.email().trim().toLowerCase();
         boolean pessoaJuridica = dto.tipoCliente() == TipoCliente.PESSOA_JURIDICA;
-        String cnpj = somenteDigitos(dto.cnpj());
+        String cnpj = onlyDigits(dto.cnpj());
 
         if (usuarioRepository.existsByEmail(email)) {
             log.warn("Cadastro negado - e-mail já cadastrado: {}", email);
@@ -64,7 +64,7 @@ public class CadastroService {
                 log.warn("Cadastro negado - CNPJ obrigatório não informado: {}", email);
                 throw new BusinessValidationException("CNPJ é obrigatório");
             }
-            if (vazio(dto.razaoSocial())) {
+            if (isBlank(dto.razaoSocial())) {
                 log.warn("Cadastro negado - razão social não informada: {}", email);
                 throw new BusinessValidationException("Razão social é obrigatória");
             }
@@ -76,7 +76,7 @@ public class CadastroService {
 
         Usuario usuario = mapper.toEntity(dto);
         usuario.setEmail(email);
-        usuario.setCpf(somenteDigitos(dto.cpf()));
+        usuario.setCpf(onlyDigits(dto.cpf()));
         usuario.setSenhaHash(passwordEncoder.encode(dto.senha()));
         usuario.setInstagramId(lead.getInstagramId());
         usuario.setEtapaFunil(Boolean.TRUE.equals(lead.getSaoPaulo())
@@ -87,7 +87,7 @@ public class CadastroService {
             Empresa empresa = empresaRepository.save(Empresa.builder()
                     .cnpj(cnpj)
                     .razaoSocial(dto.razaoSocial().trim())
-                    .nomeFantasia(vazio(dto.nomeFantasia()) ? null : dto.nomeFantasia().trim())
+                    .nomeFantasia(isBlank(dto.nomeFantasia()) ? null : dto.nomeFantasia().trim())
                     .telefone(dto.telefone().trim())
                     .build());
             usuario.setEmpresa(empresa);
@@ -106,28 +106,28 @@ public class CadastroService {
         return mapper.toResponse(usuario);
     }
 
-    private LeadInstagram buscarLeadValido(String token) {
+    private LeadInstagram findValidLead(String token) {
         LeadInstagram lead = leadRepository.findByTokenHash(tokenService.hash(token))
-                .orElseThrow(this::linkInvalido);
+                .orElseThrow(this::invalidLink);
 
         if (lead.getTokenUsadoEm() != null
                 || lead.getTokenExpiraEm() == null
                 || lead.getTokenExpiraEm().isBefore(LocalDateTime.now())) {
-            throw linkInvalido();
+            throw invalidLink();
         }
         return lead;
     }
 
-    private ResponseStatusException linkInvalido() {
+    private ResponseStatusException invalidLink() {
         log.warn("Link de cadastro inválido ou expirado");
         return new ResponseStatusException(HttpStatus.BAD_REQUEST, "Link inválido ou expirado");
     }
 
-    private String somenteDigitos(String valor) {
+    private String onlyDigits(String valor) {
         return valor == null ? "" : valor.replaceAll("\\D", "");
     }
 
-    private boolean vazio(String valor) {
+    private boolean isBlank(String valor) {
         return valor == null || valor.isBlank();
     }
 }

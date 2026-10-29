@@ -23,13 +23,13 @@ public class CadastroController {
     private final CadastroService service;
 
     @GetMapping("/validar")
-    public ResponseEntity<CadastroValidarGetResponseDTO> validar(@RequestParam String token) {
-        return ResponseEntity.ok(service.validar(token));
+    public ResponseEntity<CadastroValidarGetResponseDTO> validate(@RequestParam String token) {
+        return ResponseEntity.status(HttpStatus.OK).body(service.validate(token));
     }
 
     @PostMapping
-    public ResponseEntity<CadastroGetResponseDTO> cadastrar(
+    public ResponseEntity<CadastroGetResponseDTO> register(
             @Valid @RequestBody CadastroPostRequestDTO dto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(service.cadastrar(dto));
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.register(dto));
     }
 }

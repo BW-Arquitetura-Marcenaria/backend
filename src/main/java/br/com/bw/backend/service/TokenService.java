@@ -10,13 +10,13 @@ import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.HexFormat;
 
-@Slf4j
 @Component
+@Slf4j
 public class TokenService {
 
     private static final SecureRandom RANDOM = new SecureRandom();
 
-    public String gerar() {
+    public String generate() {
         byte[] bytes = new byte[32];
         RANDOM.nextBytes(bytes);
         return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);

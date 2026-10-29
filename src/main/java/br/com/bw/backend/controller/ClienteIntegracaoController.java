@@ -16,7 +16,7 @@ public class ClienteIntegracaoController {
     private final ClienteIntegracaoService service;
 
     @GetMapping("/instagram/{instagramId}")
-    public ClienteInstagramGetResponseDTO consultarPorInstagram(@PathVariable String instagramId) {
-        return service.consultarPorInstagram(instagramId);
+    public ClienteInstagramGetResponseDTO findByInstagram(@PathVariable String instagramId) {
+        return service.findByInstagram(instagramId);
     }
 }

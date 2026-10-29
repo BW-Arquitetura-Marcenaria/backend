@@ -13,7 +13,7 @@ public class ClienteIntegracaoService {
     private final UsuarioRepository usuarioRepository;
 
     @Transactional(readOnly = true)
-    public ClienteInstagramGetResponseDTO consultarPorInstagram(String instagramId) {
+    public ClienteInstagramGetResponseDTO findByInstagram(String instagramId) {
         return new ClienteInstagramGetResponseDTO(usuarioRepository.existsByInstagramId(instagramId));
     }
 }
