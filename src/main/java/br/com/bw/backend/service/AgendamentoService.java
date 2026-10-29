@@ -1,9 +1,9 @@
 package br.com.bw.backend.service;
 
-import br.com.bw.backend.dto.request.CriarEventoGoogleRequest;
-import br.com.bw.backend.dto.request.SolicitacaoAgendamentoRequest;
-import br.com.bw.backend.dto.response.EventoAlteradoGoogleResponse;
-import br.com.bw.backend.dto.response.EventoGoogleResponse;
+import br.com.bw.backend.dto.request.AgendamentoPostRequestDTO;
+import br.com.bw.backend.dto.request.GoogleCalendarEventoPostRequestDTO;
+import br.com.bw.backend.dto.response.GoogleCalendarEventoAlteradoGetResponseDTO;
+import br.com.bw.backend.dto.response.GoogleCalendarEventoPostResponseDTO;
 import br.com.bw.backend.entity.Agendamento;
 import br.com.bw.backend.entity.Usuario;
 import br.com.bw.backend.entity.enums.StatusAgendamento;
@@ -25,8 +25,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
+@Slf4j
 public class AgendamentoService {
 
     private static final List<StatusAgendamento> STATUS_QUE_OCUPAM_AGENDA = List.of(
@@ -40,15 +40,15 @@ public class AgendamentoService {
     private final GoogleCalendarService googleCalendarService;
 
     @Transactional
-    public Agendamento solicitar(
+    public Agendamento request(
             Integer usuarioId,
             String titulo,
             String descricao,
             LocalDateTime inicio,
             LocalDateTime fim
     ) {
-        validarPeriodo(titulo, inicio, fim);
-        validarConflitoDeHorario(inicio, fim);
+        validatePeriod(titulo, inicio, fim);
+        validateScheduleConflict(inicio, fim);
 
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new NotFoundException(
@@ -56,7 +56,7 @@ public class AgendamentoService {
                 ));
 
         Agendamento agendamento = agendamentoMapper.toEntity(
-                new SolicitacaoAgendamentoRequest(
+                new AgendamentoPostRequestDTO(
                         titulo,
                         descricao,
                         inicio,
@@ -71,7 +71,7 @@ public class AgendamentoService {
     }
 
     @Transactional
-    public Agendamento criarEAprovarComoAdmin(
+    public Agendamento createAndApproveAsAdmin(
             Integer adminUsuarioId,
             String titulo,
             String descricao,
@@ -79,7 +79,7 @@ public class AgendamentoService {
             LocalDateTime fim,
             String observacao
     ) {
-        validarPeriodo(titulo, inicio, fim);
+        validatePeriod(titulo, inicio, fim);
 
         Usuario admin = usuarioRepository.findById(adminUsuarioId)
                 .orElseThrow(() -> new NotFoundException(
@@ -87,7 +87,7 @@ public class AgendamentoService {
                 ));
 
         Agendamento agendamento = agendamentoMapper.toEntity(
-                new SolicitacaoAgendamentoRequest(
+                new AgendamentoPostRequestDTO(
                         titulo,
                         descricao,
                         inicio,
@@ -98,7 +98,7 @@ public class AgendamentoService {
         agendamento.setUsuario(admin);
         agendamento.setStatus(StatusAgendamento.PENDENTE);
 
-        String googleEventId = criarEventoNoGoogleCalendar(agendamento);
+        String googleEventId = createEventInGoogleCalendar(agendamento);
 
         try {
             agendamento.setStatus(StatusAgendamento.APROVADO);
@@ -107,12 +107,12 @@ public class AgendamentoService {
 
             return agendamentoRepository.saveAndFlush(agendamento);
         } catch (RuntimeException e) {
-            compensarCriacaoDeEvento(googleEventId);
+            compensateEventCreation(googleEventId);
             throw e;
         }
     }
 
-    private void validarPeriodo(String titulo, LocalDateTime inicio, LocalDateTime fim) {
+    private void validatePeriod(String titulo, LocalDateTime inicio, LocalDateTime fim) {
         if (titulo == null || titulo.isBlank()) {
             throw new BusinessValidationException(
                     "O título do agendamento é obrigatório."
@@ -132,7 +132,7 @@ public class AgendamentoService {
         }
     }
 
-    private void validarConflitoDeHorario(LocalDateTime inicio, LocalDateTime fim) {
+    private void validateScheduleConflict(LocalDateTime inicio, LocalDateTime fim) {
         boolean existeConflito = agendamentoRepository.existeConflitoDeHorario(
                 inicio, fim, STATUS_QUE_OCUPAM_AGENDA
         );
@@ -145,12 +145,12 @@ public class AgendamentoService {
     }
 
     @Transactional(readOnly = true)
-    public List<Agendamento> listarTodos() {
+    public List<Agendamento> findAll() {
         return agendamentoRepository.findAllByOrderByCriadoEmDesc();
     }
 
     @Transactional
-    public Agendamento aprovar(Integer agendamentoId, String observacao) {
+    public Agendamento approve(Integer agendamentoId, String observacao) {
         Agendamento agendamento = agendamentoRepository.findById(agendamentoId)
                 .orElseThrow(() -> new NotFoundException("Agendamento não encontrado."));
 
@@ -166,7 +166,7 @@ public class AgendamentoService {
                     "Somente agendamentos pendentes podem receber uma decisão.");
         }
 
-        String googleEventId = criarEventoNoGoogleCalendar(agendamento);
+        String googleEventId = createEventInGoogleCalendar(agendamento);
 
         try {
             agendamento.setStatus(StatusAgendamento.APROVADO);
@@ -175,14 +175,14 @@ public class AgendamentoService {
 
             return agendamentoRepository.saveAndFlush(agendamento);
         } catch (RuntimeException e) {
-            compensarCriacaoDeEvento(googleEventId);
+            compensateEventCreation(googleEventId);
             throw e;
         }
     }
 
-    private void compensarCriacaoDeEvento(String googleEventId) {
+    private void compensateEventCreation(String googleEventId) {
         try {
-            googleCalendarService.excluirEvento(googleEventId);
+            googleCalendarService.deleteEvent(googleEventId);
         } catch (Exception compensacaoFalhou) {
             log.error(
                     "Falha ao compensar (excluir) o evento '{}' no Google Calendar após erro de "
@@ -194,8 +194,8 @@ public class AgendamentoService {
         }
     }
 
-    private String criarEventoNoGoogleCalendar(Agendamento agendamento) {
-        CriarEventoGoogleRequest request = new CriarEventoGoogleRequest(
+    private String createEventInGoogleCalendar(Agendamento agendamento) {
+        GoogleCalendarEventoPostRequestDTO request = new GoogleCalendarEventoPostRequestDTO(
                 agendamento.getTitulo(),
                 agendamento.getDescricao(),
                 agendamento.getInicio(),
@@ -203,7 +203,7 @@ public class AgendamentoService {
         );
 
         try {
-            EventoGoogleResponse resposta = googleCalendarService.criarEvento(request);
+            GoogleCalendarEventoPostResponseDTO resposta = googleCalendarService.createEvent(request);
             return resposta.id();
         } catch (GoogleCalendarDesconectadoException e) {
             throw e;
@@ -214,9 +214,8 @@ public class AgendamentoService {
         }
     }
 
-
     @Transactional
-    public Agendamento recusar(Integer agendamentoId, String observacao) {
+    public Agendamento reject(Integer agendamentoId, String observacao) {
         Agendamento agendamento = agendamentoRepository.findById(agendamentoId)
                 .orElseThrow(() -> new NotFoundException("Agendamento não encontrado."));
 
@@ -239,7 +238,7 @@ public class AgendamentoService {
     }
 
     @Transactional
-    public void reconciliarComGoogle(EventoAlteradoGoogleResponse evento) {
+    public void reconcileWithGoogle(GoogleCalendarEventoAlteradoGetResponseDTO evento) {
         agendamentoRepository.findByGoogleEventId(evento.id()).ifPresent(agendamento -> {
             if (agendamento.getStatus() != StatusAgendamento.APROVADO) {
                 return;
@@ -247,7 +246,7 @@ public class AgendamentoService {
 
             if ("cancelled".equalsIgnoreCase(evento.status())) {
                 agendamento.setStatus(StatusAgendamento.CANCELADO);
-                agendamento.setObservacaoAdmin(anexarObservacao(
+                agendamento.setObservacaoAdmin(appendObservation(
                         agendamento.getObservacaoAdmin(),
                         "Evento removido diretamente no Google Calendar."
                 ));
@@ -275,7 +274,7 @@ public class AgendamentoService {
         });
     }
 
-    private String anexarObservacao(String existente, String nova) {
+    private String appendObservation(String existente, String nova) {
         if (existente == null || existente.isBlank()) {
             return nova;
         }
@@ -283,4 +282,3 @@ public class AgendamentoService {
         return existente + " | " + nova;
     }
 }
-

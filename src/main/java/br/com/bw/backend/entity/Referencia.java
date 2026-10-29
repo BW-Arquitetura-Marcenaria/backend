@@ -9,13 +9,13 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Builder
+@Table(name = "tabela_precos_referencia")
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@Table(name = "tabela_precos_referencia")
 public class Referencia {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

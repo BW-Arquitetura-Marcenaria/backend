@@ -20,9 +20,11 @@ public interface RastreabilidadeMapper {
         return rastreabilidade.map(this::toRastreabilidadeGetResponseDTO);
     }
 
+    @Mapping(target = "id", ignore = true)
     @Mapping(target = "projeto.id", source = "projetoId")
     Rastreabilidade toRastreabilidade(RastreabilidadePostRequestDTO rastreabilidadePostRequestDTO);
 
+    @Mapping(target = "id", ignore = true)
     @Mapping(target = "projeto.id", source = "projetoId")
     Rastreabilidade toRastreabilidade(RastreabilidadePutRequestDTO rastreabilidadePutRequestDTO);
 

@@ -22,7 +22,7 @@ public class ChatRateLimitService {
         this.limitePorMinuto = limitePorMinuto;
     }
 
-    public void validar(Integer usuarioId) {
+    public void validate(Integer usuarioId) {
         long agora = System.currentTimeMillis();
         Deque<Long> fila = envios.computeIfAbsent(usuarioId, id -> new ArrayDeque<>());
 

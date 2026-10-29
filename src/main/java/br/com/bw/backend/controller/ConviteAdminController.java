@@ -23,19 +23,19 @@ public class ConviteAdminController {
     private final ConviteAdminService service;
 
     @GetMapping("/validar")
-    public ConviteAdminValidacaoGetResponseDTO validar(@RequestParam String token) {
-        return service.validar(token);
+    public ConviteAdminValidacaoGetResponseDTO validate(@RequestParam String token) {
+        return service.validate(token);
     }
 
     @PostMapping("/aceitar")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void aceitar(@RequestBody @Valid ConviteAdminAceitarPostRequestDTO dto) {
-        service.aceitar(dto);
+    public void accept(@RequestBody @Valid ConviteAdminAceitarPostRequestDTO dto) {
+        service.accept(dto);
     }
 
     @PostMapping("/recusar")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void recusar(@RequestBody @Valid ConviteAdminRecusarPostRequestDTO dto) {
-        service.recusar(dto);
+    public void reject(@RequestBody @Valid ConviteAdminRecusarPostRequestDTO dto) {
+        service.reject(dto);
     }
 }

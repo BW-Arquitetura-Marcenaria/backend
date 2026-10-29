@@ -25,7 +25,6 @@ public interface MensagemChatRepository extends JpaRepository<MensagemChat, Inte
             """)
     List<MensagemChat> findUltimaMensagemDeCadaConversa();
 
-
     long countByClienteIdAndRemetenteAndLidaEmIsNull(Integer clienteId, RemetenteChat remetente);
 
     long countByRemetenteAndLidaEmIsNull(RemetenteChat remetente);

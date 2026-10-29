@@ -16,9 +16,9 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-@Slf4j
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class StompAuthInterceptor implements ChannelInterceptor {
 
     private static final String PREFIXO = "Bearer ";

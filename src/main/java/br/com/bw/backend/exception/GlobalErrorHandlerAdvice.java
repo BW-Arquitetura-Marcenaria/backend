@@ -10,8 +10,8 @@ import org.springframework.web.context.request.WebRequest;
 
 import java.time.LocalDateTime;
 
-@Slf4j
 @RestControllerAdvice
+@Slf4j
 public class GlobalErrorHandlerAdvice {
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<ApiErrorResponse> handleNotFoundException(NotFoundException e, WebRequest request) {

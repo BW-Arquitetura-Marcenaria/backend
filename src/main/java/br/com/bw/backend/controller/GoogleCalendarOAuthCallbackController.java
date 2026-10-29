@@ -1,7 +1,7 @@
 package br.com.bw.backend.controller;
 
-import br.com.bw.backend.config.CredenciaisGoogleCalendarService;
 import br.com.bw.backend.config.GoogleCalendarProperties;
+import br.com.bw.backend.service.CredenciaisGoogleCalendarService;
 import br.com.bw.backend.service.EstadoOAuthGoogleService;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeTokenRequest;
 import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse;
@@ -46,9 +46,9 @@ public class GoogleCalendarOAuthCallbackController {
             HttpServletResponse servletResponse
     ) {
         if (state == null || vinculoNavegador == null
-                || !estadoOAuthGoogleService.consumirEstado(
+                || !estadoOAuthGoogleService.consumeState(
                 state, vinculoNavegador)) {
-            return resposta(
+            return buildResponse(
                     HttpStatus.BAD_REQUEST,
                     "Autorização inválida ou expirada.",
                     servletResponse
@@ -56,7 +56,7 @@ public class GoogleCalendarOAuthCallbackController {
         }
 
         if (error != null) {
-            return resposta(
+            return buildResponse(
                     HttpStatus.BAD_REQUEST,
                     "A autorização do Google não foi concluída.",
                     servletResponse
@@ -64,7 +64,7 @@ public class GoogleCalendarOAuthCallbackController {
         }
 
         if (code == null || code.isBlank()) {
-            return resposta(
+            return buildResponse(
                     HttpStatus.BAD_REQUEST,
                     "O Google não retornou um código de autorização.",
                     servletResponse
@@ -85,7 +85,7 @@ public class GoogleCalendarOAuthCallbackController {
             String refreshToken = tokens.getRefreshToken();
 
             if (refreshToken == null || refreshToken.isBlank()) {
-                return resposta(
+                return buildResponse(
                         HttpStatus.BAD_GATEWAY,
                         "O Google não forneceu um refresh token. "
                                 + "Verifique a autorização concedida "
@@ -98,9 +98,9 @@ public class GoogleCalendarOAuthCallbackController {
                     ? tokens.getScope()
                     : googleCalendarProperties.getScope();
 
-            credenciaisService.salvarOuAtualizar(refreshToken, escopo);
+            credenciaisService.saveOrUpdate(refreshToken, escopo);
 
-            return resposta(
+            return buildResponse(
                     HttpStatus.OK,
                     "Google Calendar conectado com sucesso. "
                             + "Você já pode fechar esta página.",
@@ -108,7 +108,7 @@ public class GoogleCalendarOAuthCallbackController {
             );
 
         } catch (IOException | GeneralSecurityException e) {
-            return resposta(
+            return buildResponse(
                     HttpStatus.BAD_GATEWAY,
                     "Não foi possível concluir a conexão com o Google Calendar.",
                     servletResponse
@@ -116,7 +116,7 @@ public class GoogleCalendarOAuthCallbackController {
         }
     }
 
-    private ResponseEntity<String> resposta(
+    private ResponseEntity<String> buildResponse(
             HttpStatus status,
             String mensagem,
             HttpServletResponse servletResponse

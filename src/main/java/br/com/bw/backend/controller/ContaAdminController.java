@@ -7,6 +7,7 @@ import br.com.bw.backend.dto.response.ContaAdminGetResponseDTO;
 import br.com.bw.backend.service.ContaAdminService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -22,25 +23,25 @@ public class ContaAdminController {
     private final ContaAdminService contaAdminService;
 
     @GetMapping
-    public ResponseEntity<ContaAdminGetResponseDTO> buscar() {
-        return ResponseEntity.ok(contaAdminService.buscar());
+    public ResponseEntity<ContaAdminGetResponseDTO> find() {
+        return ResponseEntity.status(HttpStatus.OK).body(contaAdminService.find());
     }
 
     @PutMapping("/empresa")
-    public ResponseEntity<ContaAdminGetResponseDTO> atualizarEmpresa(
+    public ResponseEntity<ContaAdminGetResponseDTO> updateCompany(
             @Valid @RequestBody ContaAdminEmpresaPutRequestDTO dto) {
-        return ResponseEntity.ok(contaAdminService.atualizarEmpresa(dto));
+        return ResponseEntity.status(HttpStatus.OK).body(contaAdminService.updateCompany(dto));
     }
 
     @PutMapping("/endereco")
-    public ResponseEntity<ContaAdminGetResponseDTO> atualizarEndereco(
+    public ResponseEntity<ContaAdminGetResponseDTO> updateAddress(
             @Valid @RequestBody ContaAdminEnderecoPutRequestDTO dto) {
-        return ResponseEntity.ok(contaAdminService.atualizarEndereco(dto));
+        return ResponseEntity.status(HttpStatus.OK).body(contaAdminService.updateAddress(dto));
     }
 
     @PutMapping("/seguranca")
-    public ResponseEntity<Void> alterarSenha(@Valid @RequestBody ContaAdminSegurancaPutRequestDTO dto) {
-        contaAdminService.alterarSenha(dto);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<Void> changePassword(@Valid @RequestBody ContaAdminSegurancaPutRequestDTO dto) {
+        contaAdminService.changePassword(dto);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

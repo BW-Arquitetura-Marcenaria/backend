@@ -1,7 +1,6 @@
 package br.com.bw.backend.service;
 
-import br.com.bw.backend.config.CredenciaisGoogleCalendarService;
-import br.com.bw.backend.dto.response.ResultadoSincronizacaoGoogle;
+import br.com.bw.backend.dto.response.GoogleCalendarSincronizacaoGetResponseDTO;
 import br.com.bw.backend.exception.GoogleCalendarDesconectadoException;
 import br.com.bw.backend.exception.GoogleCalendarSyncTokenInvalidoException;
 import lombok.RequiredArgsConstructor;
@@ -10,8 +9,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
+@Slf4j
 public class GoogleCalendarSincronizacaoJob {
 
     private final GoogleCalendarService googleCalendarService;
@@ -22,22 +21,22 @@ public class GoogleCalendarSincronizacaoJob {
             fixedDelayString = "${integracoes.google.calendar.sincronizacao.intervalo-ms:300000}",
             initialDelayString = "${integracoes.google.calendar.sincronizacao.atraso-inicial-ms:30000}"
     )
-    public void sincronizar() {
+    public void synchronize() {
         try {
-            String syncTokenAtual = credenciaisService.obterSyncToken().orElse(null);
+            String syncTokenAtual = credenciaisService.getSyncToken().orElse(null);
 
-            ResultadoSincronizacaoGoogle resultado;
+            GoogleCalendarSincronizacaoGetResponseDTO resultado;
             try {
-                resultado = googleCalendarService.sincronizarAlteracoes(syncTokenAtual);
+                resultado = googleCalendarService.synchronizeChanges(syncTokenAtual);
             } catch (GoogleCalendarSyncTokenInvalidoException e) {
                 log.warn("{} Reiniciando sincronização completa.", e.getMessage());
-                credenciaisService.salvarSyncToken(null);
-                resultado = googleCalendarService.sincronizarAlteracoes(null);
+                credenciaisService.saveSyncToken(null);
+                resultado = googleCalendarService.synchronizeChanges(null);
             }
 
-            resultado.eventos().forEach(agendamentoService::reconciliarComGoogle);
+            resultado.eventos().forEach(agendamentoService::reconcileWithGoogle);
 
-            credenciaisService.salvarSyncToken(resultado.proximoSyncToken());
+            credenciaisService.saveSyncToken(resultado.proximoSyncToken());
 
             if (!resultado.eventos().isEmpty()) {
                 log.info(

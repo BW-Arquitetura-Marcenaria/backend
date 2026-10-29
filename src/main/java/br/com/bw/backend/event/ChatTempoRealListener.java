@@ -8,9 +8,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
-@Slf4j
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class ChatTempoRealListener {
 
     private static final String CANAL_CLIENTE = "/queue/chat";
@@ -19,7 +19,7 @@ public class ChatTempoRealListener {
     private final SimpMessagingTemplate messagingTemplate;
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void aoCriarMensagem(MensagemChatCriadaEvent evento) {
+    public void onMessageCreated(MensagemChatCriadaEvent evento) {
         MensagemChatTempoRealResponseDTO payload = new MensagemChatTempoRealResponseDTO(evento.clienteId(), evento.mensagem());
 
         try {

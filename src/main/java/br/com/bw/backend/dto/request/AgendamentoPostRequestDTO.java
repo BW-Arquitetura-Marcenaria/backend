@@ -7,7 +7,7 @@ import jakarta.validation.constraints.Size;
 
 import java.time.LocalDateTime;
 
-public record SolicitacaoAgendamentoRequest(
+public record AgendamentoPostRequestDTO(
         @NotBlank
         @Size(max = 150)
         String titulo,

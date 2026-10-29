@@ -10,8 +10,8 @@ import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-@Slf4j
 @Component
+@Slf4j
 public class WebSocketSessionRegistry {
 
     private static final long TOLERANCIA_SEM_CONNECT_MS = 30_000;

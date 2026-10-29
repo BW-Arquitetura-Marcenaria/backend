@@ -9,13 +9,13 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-@Builder
+@Table(name = "agendamentos")
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@Table(name = "agendamentos")
 public class Agendamento {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -57,4 +57,3 @@ public class Agendamento {
     @Column(name = "atualizado_em", nullable = false)
     private LocalDateTime atualizadoEm;
 }
-

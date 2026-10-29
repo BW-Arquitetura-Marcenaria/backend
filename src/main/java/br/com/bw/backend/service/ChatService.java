@@ -29,8 +29,8 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
+@Slf4j
 public class ChatService {
 
     private static final int TAMANHO_PREVIA = 120;
@@ -41,38 +41,34 @@ public class ChatService {
     private final ApplicationEventPublisher eventPublisher;
     private final ChatRateLimitService rateLimitService;
 
-    // ---------- Cliente ----------
-
     @Transactional(readOnly = true)
-    public List<MensagemChatGetResponseDTO> historicoDoCliente(Integer usuarioId, Integer depois) {
-        Usuario cliente = clienteLogado(usuarioId);
-        return buscarMensagens(cliente.getId(), depois);
+    public List<MensagemChatGetResponseDTO> getClientHistory(Integer usuarioId, Integer depois) {
+        Usuario cliente = loggedInClient(usuarioId);
+        return findMessages(cliente.getId(), depois);
     }
 
     @Transactional
-    public MensagemChatGetResponseDTO enviarComoCliente(Integer usuarioId, MensagemChatPostRequestDTO dto) {
-        Usuario cliente = clienteLogado(usuarioId);
-        return salvar(cliente, cliente.getId(), RemetenteChat.CLIENTE, dto);
+    public MensagemChatGetResponseDTO sendAsClient(Integer usuarioId, MensagemChatPostRequestDTO dto) {
+        Usuario cliente = loggedInClient(usuarioId);
+        return save(cliente, cliente.getId(), RemetenteChat.CLIENTE, dto);
     }
 
     @Transactional(readOnly = true)
-    public NaoLidasGetResponseDTO naoLidasDoCliente(Integer usuarioId) {
-        Usuario cliente = clienteLogado(usuarioId);
+    public NaoLidasGetResponseDTO getClientUnread(Integer usuarioId) {
+        Usuario cliente = loggedInClient(usuarioId);
         return new NaoLidasGetResponseDTO(mensagemRepository
                 .countByClienteIdAndRemetenteAndLidaEmIsNull(cliente.getId(), RemetenteChat.ADMIN));
     }
 
     @Transactional
-    public void marcarComoLidasPeloCliente(Integer usuarioId) {
-        Usuario cliente = clienteLogado(usuarioId);
+    public void markAsReadByClient(Integer usuarioId) {
+        Usuario cliente = loggedInClient(usuarioId);
         mensagemRepository.marcarComoLidas(cliente.getId(), RemetenteChat.ADMIN, LocalDateTime.now());
     }
 
-    // ---------- Admin ----------
-
     @Transactional(readOnly = true)
-    public List<ConversaChatGetResponseDTO> listarConversas(Integer adminId) {
-        adminLogado(adminId);
+    public List<ConversaChatGetResponseDTO> listConversations(Integer adminId) {
+        loggedInAdmin(adminId);
 
         Map<Integer, Long> naoLidas = new HashMap<>();
         for (ContagemNaoLidas c : mensagemRepository.contarNaoLidasPorConversa(RemetenteChat.CLIENTE)) {
@@ -82,8 +78,8 @@ public class ChatService {
         return mensagemRepository.findUltimaMensagemDeCadaConversa().stream()
                 .map(m -> new ConversaChatGetResponseDTO(
                         m.getCliente().getId(),
-                        nomeCompleto(m.getCliente()),
-                        previa(m.getConteudo()),
+                        fullName(m.getCliente()),
+                        preview(m.getConteudo()),
                         m.getRemetente(),
                         m.getCriadoEm(),
                         naoLidas.getOrDefault(m.getCliente().getId(), 0L)))
@@ -91,36 +87,36 @@ public class ChatService {
     }
 
     @Transactional(readOnly = true)
-    public List<MensagemChatGetResponseDTO> historicoDoAdmin(Integer adminId, Integer clienteId, Integer depois) {
-        adminLogado(adminId);
-        Usuario cliente = clienteDaConversa(clienteId);
-        return buscarMensagens(cliente.getId(), depois);
+    public List<MensagemChatGetResponseDTO> getAdminHistory(Integer adminId, Integer clienteId, Integer depois) {
+        loggedInAdmin(adminId);
+        Usuario cliente = clientOfConversation(clienteId);
+        return findMessages(cliente.getId(), depois);
     }
 
     @Transactional
-    public MensagemChatGetResponseDTO responder(Integer adminId, Integer clienteId, MensagemChatPostRequestDTO dto) {
-        Usuario admin = adminLogado(adminId);
-        Usuario cliente = clienteDaConversa(clienteId);
-        return salvar(cliente, admin.getId(), RemetenteChat.ADMIN, dto);
+    public MensagemChatGetResponseDTO reply(Integer adminId, Integer clienteId, MensagemChatPostRequestDTO dto) {
+        Usuario admin = loggedInAdmin(adminId);
+        Usuario cliente = clientOfConversation(clienteId);
+        return save(cliente, admin.getId(), RemetenteChat.ADMIN, dto);
     }
 
     @Transactional(readOnly = true)
-    public NaoLidasGetResponseDTO naoLidasDoAdmin(Integer adminId) {
-        adminLogado(adminId);
+    public NaoLidasGetResponseDTO getAdminUnread(Integer adminId) {
+        loggedInAdmin(adminId);
         return new NaoLidasGetResponseDTO(mensagemRepository.countByRemetenteAndLidaEmIsNull(RemetenteChat.CLIENTE));
     }
 
     @Transactional
-    public void marcarComoLidasPeloAdmin(Integer adminId, Integer clienteId) {
-        adminLogado(adminId);
-        Usuario cliente = clienteDaConversa(clienteId);
+    public void markAsReadByAdmin(Integer adminId, Integer clienteId) {
+        loggedInAdmin(adminId);
+        Usuario cliente = clientOfConversation(clienteId);
         mensagemRepository.marcarComoLidas(cliente.getId(), RemetenteChat.CLIENTE, LocalDateTime.now());
     }
 
     @Transactional(readOnly = true)
-    public ResumoAtendimentoGetResponseDTO resumoDoAtendimento(Integer adminId, Integer clienteId) {
-        adminLogado(adminId);
-        Usuario cliente = clienteDaConversa(clienteId);
+    public ResumoAtendimentoGetResponseDTO getAttendanceSummary(Integer adminId, Integer clienteId) {
+        loggedInAdmin(adminId);
+        Usuario cliente = clientOfConversation(clienteId);
 
         LeadInstagram lead = leadRepository.findByUsuarioId(cliente.getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
@@ -139,20 +135,17 @@ public class ChatService {
                 lead.getCriadoEm());
     }
 
-    // ---------- Internos ----------
-
-    private List<MensagemChatGetResponseDTO> buscarMensagens(Integer clienteId, Integer depois) {
+    private List<MensagemChatGetResponseDTO> findMessages(Integer clienteId, Integer depois) {
         int ultimoId = depois == null ? 0 : depois;
         return mensagemRepository.findByClienteIdAndIdGreaterThanOrderByIdAsc(clienteId, ultimoId).stream()
-                .map(this::paraDto)
+                .map(this::toDto)
                 .toList();
     }
 
-    private MensagemChatGetResponseDTO salvar(Usuario cliente, Integer autorId,
+    private MensagemChatGetResponseDTO save(Usuario cliente, Integer autorId,
                                               RemetenteChat remetente, MensagemChatPostRequestDTO dto) {
-        rateLimitService.validar(autorId);
+        rateLimitService.validate(autorId);
 
-        // Primeira mensagem nao lida da sequencia deste lado: so ela dispara o aviso por e-mail
         boolean primeiraNaoLida = !mensagemRepository
                 .existsByClienteIdAndRemetenteAndLidaEmIsNull(cliente.getId(), remetente);
 
@@ -163,9 +156,8 @@ public class ChatService {
                 .conteudo(dto.conteudo().trim())
                 .build());
 
-        MensagemChatGetResponseDTO resposta = paraDto(mensagem);
+        MensagemChatGetResponseDTO resposta = toDto(mensagem);
 
-        // E-mail e WebSocket reagem a este evento depois do commit
         eventPublisher.publishEvent(
                 new MensagemChatCriadaEvent(cliente.getId(), remetente, primeiraNaoLida, resposta));
 
@@ -174,7 +166,7 @@ public class ChatService {
         return resposta;
     }
 
-    private Usuario clienteLogado(Integer usuarioId) {
+    private Usuario loggedInClient(Integer usuarioId) {
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Acesso negado"));
         if (usuario.getPerfil() != Perfil.CLIENTE) {
@@ -183,7 +175,7 @@ public class ChatService {
         return usuario;
     }
 
-    private Usuario adminLogado(Integer usuarioId) {
+    private Usuario loggedInAdmin(Integer usuarioId) {
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Acesso negado"));
         if (usuario.getPerfil() != Perfil.ADMIN) {
@@ -192,22 +184,22 @@ public class ChatService {
         return usuario;
     }
 
-    private Usuario clienteDaConversa(Integer clienteId) {
+    private Usuario clientOfConversation(Integer clienteId) {
         return usuarioRepository.findById(clienteId)
                 .filter(u -> u.getPerfil() == Perfil.CLIENTE)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente não encontrado"));
     }
 
-    private MensagemChatGetResponseDTO paraDto(MensagemChat m) {
+    private MensagemChatGetResponseDTO toDto(MensagemChat m) {
         return new MensagemChatGetResponseDTO(m.getId(), m.getRemetente(), m.getConteudo(), m.getCriadoEm());
     }
 
-    private String nomeCompleto(Usuario u) {
+    private String fullName(Usuario u) {
         String sobrenome = u.getSobrenome() == null ? "" : u.getSobrenome();
         return (u.getNome() + " " + sobrenome).trim();
     }
 
-    private String previa(String conteudo) {
+    private String preview(String conteudo) {
         if (conteudo.length() <= TAMANHO_PREVIA) {
             return conteudo;
         }

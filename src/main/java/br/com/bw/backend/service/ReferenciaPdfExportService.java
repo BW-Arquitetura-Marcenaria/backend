@@ -17,15 +17,15 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
+@Slf4j
 public class ReferenciaPdfExportService {
 
     private static final DateTimeFormatter DATA_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     private final ReferenciaRepository referenciaRepository;
 
-    public byte[] exportarPdf() {
+    public byte[] exportPdf() {
         log.info("Exportando tabela de preços referência para PDF");
 
         List<Referencia> referencias = referenciaRepository.findAll(Sort.by(Sort.Direction.ASC, "categoria", "descricao"));
@@ -35,8 +35,8 @@ public class ReferenciaPdfExportService {
             PdfWriter.getInstance(document, outputStream);
             document.open();
 
-            adicionarTitulo(document);
-            adicionarTabela(document, referencias);
+            addTitle(document);
+            addTable(document, referencias);
 
             document.close();
             return outputStream.toByteArray();
@@ -46,7 +46,7 @@ public class ReferenciaPdfExportService {
         }
     }
 
-    private void adicionarTitulo(Document document) throws DocumentException {
+    private void addTitle(Document document) throws DocumentException {
         Font tituloFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16);
         Paragraph titulo = new Paragraph("Tabela de Preços Referência", tituloFont);
         titulo.setSpacingAfter(10);
@@ -59,7 +59,7 @@ public class ReferenciaPdfExportService {
         document.add(geradoEm);
     }
 
-    private void adicionarTabela(Document document, List<Referencia> referencias) throws DocumentException {
+    private void addTable(Document document, List<Referencia> referencias) throws DocumentException {
         PdfPTable table = new PdfPTable(new float[]{2.2f, 1.6f, 3.5f, 2.3f, 1.5f, 1.8f});
         table.setWidthPercentage(100);
 
@@ -76,16 +76,16 @@ public class ReferenciaPdfExportService {
         }
 
         for (Referencia referencia : referencias) {
-            table.addCell(criarCelula(referencia.getCategoria() != null ? referencia.getCategoria().getValor() : "-", cellFont));
-            table.addCell(criarCelula(
+            table.addCell(createCell(referencia.getCategoria() != null ? referencia.getCategoria().getValor() : "-", cellFont));
+            table.addCell(createCell(
                     referencia.getPrecoReferencia() != null
                             ? "R$ " + referencia.getPrecoReferencia().setScale(2, java.math.RoundingMode.HALF_UP)
                             : "-",
                     cellFont));
-            table.addCell(criarCelula(referencia.getDescricao(), cellFont));
-            table.addCell(criarCelula(referencia.getMaterialBase(), cellFont));
-            table.addCell(criarCelula(referencia.getUnidade() != null ? referencia.getUnidade().getValor() : "-", cellFont));
-            table.addCell(criarCelula(
+            table.addCell(createCell(referencia.getDescricao(), cellFont));
+            table.addCell(createCell(referencia.getMaterialBase(), cellFont));
+            table.addCell(createCell(referencia.getUnidade() != null ? referencia.getUnidade().getValor() : "-", cellFont));
+            table.addCell(createCell(
                     referencia.getDataAtualizacao() != null ? referencia.getDataAtualizacao().format(DATA_FORMATTER) : "-",
                     cellFont));
         }
@@ -101,7 +101,7 @@ public class ReferenciaPdfExportService {
         document.add(table);
     }
 
-    private PdfPCell criarCelula(String texto, Font font) {
+    private PdfPCell createCell(String texto, Font font) {
         PdfPCell cell = new PdfPCell(new Phrase(texto != null ? texto : "-", font));
         cell.setPadding(5);
         return cell;

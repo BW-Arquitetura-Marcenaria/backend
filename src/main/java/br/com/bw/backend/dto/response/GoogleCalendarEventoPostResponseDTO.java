@@ -1,6 +1,6 @@
 package br.com.bw.backend.dto.response;
 
-public record EventoGoogleResponse(
+public record GoogleCalendarEventoPostResponseDTO(
         String id,
         String titulo,
         String link

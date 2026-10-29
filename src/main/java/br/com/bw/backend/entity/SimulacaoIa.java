@@ -8,13 +8,13 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Builder
+@Table(name = "simulacoes_ia")
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@Table(name = "simulacoes_ia")
 public class SimulacaoIa {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

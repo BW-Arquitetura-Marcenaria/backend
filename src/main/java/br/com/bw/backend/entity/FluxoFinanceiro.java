@@ -9,19 +9,18 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Builder
+@Table(name = "fluxo_financeiro")
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@Table(name = "fluxo_financeiro")
 public class FluxoFinanceiro {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
     private Integer id;
-
 
     @Enumerated(EnumType.STRING)
     @Column(name = "tipo_transacao", nullable = false, length = 10)

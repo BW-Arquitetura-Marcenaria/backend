@@ -1,4 +1,4 @@
-package br.com.bw.backend.config;
+package br.com.bw.backend.service;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -45,7 +45,7 @@ public class GoogleTokenEncryptionService {
         this.chave = new SecretKeySpec(bytesChave, "AES");
     }
 
-    public String criptografar(String texto) {
+    public String encrypt(String texto) {
         if (texto == null || texto.isBlank()) {
             throw new IllegalArgumentException(
                     "O token não pode ser vazio."
@@ -83,7 +83,7 @@ public class GoogleTokenEncryptionService {
         }
     }
 
-    public String descriptografar(String textoCriptografado) {
+    public String decrypt(String textoCriptografado) {
         try {
             byte[] dados = Base64.getDecoder().decode(textoCriptografado);
 
@@ -122,4 +122,3 @@ public class GoogleTokenEncryptionService {
         }
     }
 }
-

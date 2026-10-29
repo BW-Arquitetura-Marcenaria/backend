@@ -25,8 +25,8 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
+@Slf4j
 public class FunilService {
 
     private static final String ORIGEM = "Instagram";
@@ -40,7 +40,7 @@ public class FunilService {
     private final LeadInstagramRepository leadRepository;
 
     @Transactional(readOnly = true)
-    public FunilGetResponseDTO listar() {
+    public FunilGetResponseDTO findAll() {
         List<LeadInstagram> leads = leadRepository.findParaFunil(Perfil.CLIENTE, ETAPAS_DO_BOARD);
 
         Map<EtapaFunil, List<FunilCardGetResponseDTO>> porEtapa = new EnumMap<>(EtapaFunil.class);
@@ -53,7 +53,7 @@ public class FunilService {
 
         for (LeadInstagram lead : leads) {
             EtapaFunil etapa = lead.getUsuario().getEtapaFunil();
-            porEtapa.get(etapa).add(paraCard(lead));
+            porEtapa.get(etapa).add(toCard(lead));
 
             if (etapa != EtapaFunil.FECHADO) {
                 ativas++;
@@ -72,7 +72,7 @@ public class FunilService {
         List<FunilColunaGetResponseDTO> colunas = ETAPAS_DO_BOARD.stream()
                 .map(etapa -> new FunilColunaGetResponseDTO(
                         etapa,
-                        titulo(etapa),
+                        getStageTitle(etapa),
                         porEtapa.get(etapa).size(),
                         porEtapa.get(etapa)))
                 .toList();
@@ -81,55 +81,53 @@ public class FunilService {
     }
 
     @Transactional(readOnly = true)
-    public FunilDetalheGetResponseDTO detalhar(Integer clienteId) {
-        return paraDetalhe(leadDoFunil(clienteId));
+    public FunilDetalheGetResponseDTO findDetailsById(Integer clienteId) {
+        return toDetails(findLeadForFunnel(clienteId));
     }
 
     @Transactional
-    public FunilDetalheGetResponseDTO alterarEtapa(Integer adminId, Integer clienteId, FunilEtapaPutRequestDTO dto) {
+    public FunilDetalheGetResponseDTO updateStage(Integer adminId, Integer clienteId, FunilEtapaPutRequestDTO dto) {
         if (!ETAPAS_DO_BOARD.contains(dto.etapa())) {
             throw new BusinessValidationException("Etapa inválida para o funil");
         }
 
-        LeadInstagram lead = leadDoFunil(clienteId);
+        LeadInstagram lead = findLeadForFunnel(clienteId);
         EtapaFunil anterior = lead.getUsuario().getEtapaFunil();
         lead.getUsuario().setEtapaFunil(dto.etapa());
 
         log.info("Etapa do funil alterada - cliente: {} de: {} para: {} por: {}",
                 clienteId, anterior, dto.etapa(), adminId);
-        return paraDetalhe(lead);
+        return toDetails(lead);
     }
 
-    // ---------- Internos ----------
-
-    private LeadInstagram leadDoFunil(Integer clienteId) {
+    private LeadInstagram findLeadForFunnel(Integer clienteId) {
         return leadRepository.findByUsuarioId(clienteId)
                 .filter(l -> l.getUsuario().getPerfil() == Perfil.CLIENTE)
                 .filter(l -> ETAPAS_DO_BOARD.contains(l.getUsuario().getEtapaFunil()))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Oportunidade não encontrada"));
     }
 
-    private FunilCardGetResponseDTO paraCard(LeadInstagram lead) {
+    private FunilCardGetResponseDTO toCard(LeadInstagram lead) {
         Usuario usuario = lead.getUsuario();
         return new FunilCardGetResponseDTO(
                 usuario.getId(),
-                nomeCompleto(usuario),
-                iniciais(usuario),
+                getFullName(usuario),
+                getInitials(usuario),
                 ORIGEM,
                 lead.getCriadoEm(),
-                tipoProjeto(lead),
+                getProjectType(lead),
                 lead.getOrcamento(),
                 lead.getScore(),
                 lead.getClassificacao());
     }
 
-    private FunilDetalheGetResponseDTO paraDetalhe(LeadInstagram lead) {
+    private FunilDetalheGetResponseDTO toDetails(LeadInstagram lead) {
         Usuario usuario = lead.getUsuario();
         return new FunilDetalheGetResponseDTO(
                 usuario.getId(),
-                nomeCompleto(usuario),
-                iniciais(usuario),
-                tipoProjeto(lead),
+                getFullName(usuario),
+                getInitials(usuario),
+                getProjectType(lead),
                 lead.getOrcamento(),
                 ORIGEM,
                 lead.getCriadoEm(),
@@ -138,7 +136,7 @@ public class FunilService {
                 usuario.getEtapaFunil());
     }
 
-    private String titulo(EtapaFunil etapa) {
+    private String getStageTitle(EtapaFunil etapa) {
         return switch (etapa) {
             case QUALIFICADO -> "Qualificado";
             case ORCAMENTO_ENVIADO -> "Orçamento Enviado";
@@ -148,7 +146,7 @@ public class FunilService {
         };
     }
 
-    private String tipoProjeto(LeadInstagram lead) {
+    private String getProjectType(LeadInstagram lead) {
         boolean temMovel = lead.getMovel() != null && !lead.getMovel().isBlank();
         boolean temAmbiente = lead.getAmbiente() != null && !lead.getAmbiente().isBlank();
 
@@ -161,12 +159,12 @@ public class FunilService {
         return temAmbiente ? lead.getAmbiente().trim() : null;
     }
 
-    private String nomeCompleto(Usuario u) {
+    private String getFullName(Usuario u) {
         String sobrenome = u.getSobrenome() == null ? "" : u.getSobrenome();
         return (u.getNome() + " " + sobrenome).trim();
     }
 
-    private String iniciais(Usuario u) {
+    private String getInitials(Usuario u) {
         String primeira = u.getNome().isBlank() ? "" : u.getNome().substring(0, 1);
         String segunda = (u.getSobrenome() == null || u.getSobrenome().isBlank()) ? "" : u.getSobrenome().substring(0, 1);
         return (primeira + segunda).toUpperCase();

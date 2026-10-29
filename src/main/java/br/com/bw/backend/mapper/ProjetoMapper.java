@@ -18,9 +18,11 @@ public interface ProjetoMapper {
         return projeto.map(this::toProjetoGetResponseDTO);
     }
 
+    @Mapping(target = "id", ignore = true)
     @Mapping(target = "cliente", ignore = true)
     Projeto toProjeto(ProjetoPostRequestDTO projetoPostRequestDTO);
 
+    @Mapping(target = "id", ignore = true)
     @Mapping(target = "cliente", ignore = true)
     Projeto toProjeto(ProjetoPutRequestDTO projetoPutRequestDTO);
 }

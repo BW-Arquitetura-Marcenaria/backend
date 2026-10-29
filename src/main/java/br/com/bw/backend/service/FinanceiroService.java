@@ -1,7 +1,7 @@
 package br.com.bw.backend.service;
 
-import br.com.bw.backend.dto.response.FinanceiroKpiResponseDTO;
-import br.com.bw.backend.dto.response.FinanceiroReceitaDespesaMensalDTO;
+import br.com.bw.backend.dto.response.FinanceiroKpiGetResponseDTO;
+import br.com.bw.backend.dto.response.FinanceiroReceitaDespesaMensalGetResponseDTO;
 import br.com.bw.backend.entity.Financeiro;
 import br.com.bw.backend.exception.NotFoundException;
 import br.com.bw.backend.repository.FinanceiroRepository;
@@ -19,8 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
+@Slf4j
 public class FinanceiroService {
     private final FinanceiroRepository financeiroRepository;
 
@@ -28,6 +28,7 @@ public class FinanceiroService {
         log.info("Listando registros financeiros - página: {}, tamanho: {}", pageable.getPageNumber(), pageable.getPageSize());
         return financeiroRepository.findAll(pageable);
     }
+
 
     public Financeiro findById(Integer id) {
         return financeiroRepository.findById(id)
@@ -57,7 +58,7 @@ public class FinanceiroService {
         log.info("Registro financeiro removido com sucesso - id: {}", id);
     }
 
-    public FinanceiroKpiResponseDTO getKpis() {
+    public FinanceiroKpiGetResponseDTO getKpis() {
         var mesAtual = YearMonth.now();
         var mesAnterior = mesAtual.minusMonths(1);
 
@@ -72,19 +73,19 @@ public class FinanceiroService {
                 mesAnterior.atDay(1), mesAnterior.atEndOfMonth());
 
         var resultadoLiquido = receitasMes.subtract(despesasMes);
-        var margemPercentual = calcularPercentual(resultadoLiquido, receitasMes);
+        var margemPercentual = calculatePercentage(resultadoLiquido, receitasMes);
 
-        return new FinanceiroKpiResponseDTO(
+        return new FinanceiroKpiGetResponseDTO(
                 receitasMes.setScale(2, RoundingMode.HALF_UP),
-                calcularVariacaoPercentual(receitasMes, receitasMesAnterior),
+                calculatePercentageVariation(receitasMes, receitasMesAnterior),
                 despesasMes.setScale(2, RoundingMode.HALF_UP),
-                calcularVariacaoPercentual(despesasMes, despesasMesAnterior),
+                calculatePercentageVariation(despesasMes, despesasMesAnterior),
                 resultadoLiquido.setScale(2, RoundingMode.HALF_UP),
                 margemPercentual
         );
     }
 
-    private BigDecimal calcularVariacaoPercentual(BigDecimal valorAtual, BigDecimal valorAnterior) {
+    private BigDecimal calculatePercentageVariation(BigDecimal valorAtual, BigDecimal valorAnterior) {
         if (valorAnterior.compareTo(BigDecimal.ZERO) == 0) {
             return BigDecimal.ZERO;
         }
@@ -95,7 +96,7 @@ public class FinanceiroService {
                 .setScale(1, RoundingMode.HALF_UP);
     }
 
-    private BigDecimal calcularPercentual(BigDecimal numerador, BigDecimal denominador) {
+    private BigDecimal calculatePercentage(BigDecimal numerador, BigDecimal denominador) {
         if (denominador.compareTo(BigDecimal.ZERO) == 0) {
             return BigDecimal.ZERO;
         }
@@ -105,14 +106,14 @@ public class FinanceiroService {
                 .setScale(1, RoundingMode.HALF_UP);
     }
 
-    public List<FinanceiroReceitaDespesaMensalDTO> getComparativoMensal(int meses) {
+    public List<FinanceiroReceitaDespesaMensalGetResponseDTO> getMonthlyComparison(int meses) {
         if (meses < 1) {
             meses = 1;
         }
 
         var mesAtual = YearMonth.now();
         var formatter = DateTimeFormatter.ofPattern("yyyy-MM");
-        var comparativo = new ArrayList<FinanceiroReceitaDespesaMensalDTO>();
+        var comparativo = new ArrayList<FinanceiroReceitaDespesaMensalGetResponseDTO>();
 
         for (int i = meses - 1; i >= 0; i--) {
             var mesReferencia = mesAtual.minusMonths(i);
@@ -122,7 +123,7 @@ public class FinanceiroService {
             var despesas = financeiroRepository.sumFreteByDataPedidoBetween(
                     mesReferencia.atDay(1), mesReferencia.atEndOfMonth());
 
-            comparativo.add(new FinanceiroReceitaDespesaMensalDTO(
+            comparativo.add(new FinanceiroReceitaDespesaMensalGetResponseDTO(
                     mesReferencia.format(formatter),
                     receitas.setScale(2, RoundingMode.HALF_UP),
                     despesas.setScale(2, RoundingMode.HALF_UP)

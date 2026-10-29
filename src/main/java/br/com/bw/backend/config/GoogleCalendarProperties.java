@@ -1,4 +1,3 @@
-
 package br.com.bw.backend.config;
 
 import lombok.Getter;

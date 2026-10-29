@@ -10,15 +10,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
+@Slf4j
 public class ChatLogService {
 
     private final ChatbotLogRepository chatbotLogRepository;
     private final UsuarioRepository usuarioRepository;
 
     @Transactional
-    public void registrarInstagram(ChatLogPostRequestDTO dto) {
+    public void register(ChatLogPostRequestDTO dto) {
         String instagramId = dto.instagramId().trim();
 
         ChatbotLog chatbotLog = new ChatbotLog();
