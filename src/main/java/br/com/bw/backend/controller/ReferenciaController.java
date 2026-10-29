@@ -14,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -34,7 +35,7 @@ public class ReferenciaController {
             @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.DESC)
             Pageable pageable) {
         var response = referenciaService.listAll(pageable).map(mapper::toReferenciaGetResponseDTO);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @PostMapping()
@@ -42,7 +43,7 @@ public class ReferenciaController {
         var referencia = mapper.toReferencia(referenciaPostRequestDTO);
         var referenciaSave = referenciaService.save(referencia);
 
-        return ResponseEntity.status(201).body(mapper.toReferenciaGetResponseDTO(referenciaSave));
+        return ResponseEntity.status(HttpStatus.CREATED).body(mapper.toReferenciaGetResponseDTO(referenciaSave));
     }
 
     @PutMapping("/{id}")
@@ -50,32 +51,32 @@ public class ReferenciaController {
         var referencia = mapper.toReferencia(referenciaPutRequestDTO);
         var referenciaUpdated = referenciaService.updateById(id, referencia);
 
-        return ResponseEntity.ok(mapper.toReferenciaGetResponseDTO(referenciaUpdated));
+        return ResponseEntity.status(HttpStatus.OK).body(mapper.toReferenciaGetResponseDTO(referenciaUpdated));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteById(@PathVariable Integer id) {
         referenciaService.deleteById(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @GetMapping("/export/pdf")
-    public ResponseEntity<byte[]> exportarPdf() {
-        byte[] pdf = referenciaPdfExportService.exportarPdf();
+    public ResponseEntity<byte[]> exportPdf() {
+        byte[] pdf = referenciaPdfExportService.exportPdf();
         String nomeArquivo = "tabela-precos-referencia-" + LocalDate.now() + ".pdf";
 
-        return ResponseEntity.ok()
+        return ResponseEntity.status(HttpStatus.OK)
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + nomeArquivo + "\"")
                 .contentType(MediaType.APPLICATION_PDF)
                 .body(pdf);
     }
 
     @GetMapping("/export/excel")
-    public ResponseEntity<byte[]> exportarExcel() {
-        byte[] excel = referenciaExcelExportService.exportarExcel();
+    public ResponseEntity<byte[]> exportExcel() {
+        byte[] excel = referenciaExcelExportService.exportExcel();
         String nomeArquivo = "tabela-precos-referencia-" + LocalDate.now() + ".xlsx";
 
-        return ResponseEntity.ok()
+        return ResponseEntity.status(HttpStatus.OK)
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + nomeArquivo + "\"")
                 .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
                 .body(excel);

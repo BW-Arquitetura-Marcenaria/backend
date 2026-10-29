@@ -13,8 +13,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
+@Slf4j
 public class ProjetoService {
     private final ProjetoRepository projetoRepository;
     private final UsuarioRepository usuarioRepository;

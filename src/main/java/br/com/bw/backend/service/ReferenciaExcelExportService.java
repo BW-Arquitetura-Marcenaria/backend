@@ -19,8 +19,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
+@Slf4j
 public class ReferenciaExcelExportService {
 
     private static final DateTimeFormatter DATA_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
@@ -30,7 +30,7 @@ public class ReferenciaExcelExportService {
 
     private final ReferenciaRepository referenciaRepository;
 
-    public byte[] exportarExcel() {
+    public byte[] exportExcel() {
         log.info("Exportando tabela de preços referência para Excel");
 
         List<Referencia> referencias = referenciaRepository.findAll(Sort.by(Sort.Direction.ASC, "categoria", "descricao"));
@@ -38,9 +38,9 @@ public class ReferenciaExcelExportService {
         try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             Sheet sheet = workbook.createSheet("Tabela de Preços Referência");
 
-            int linhaCabecalho = adicionarTitulo(workbook, sheet);
-            adicionarTabela(workbook, sheet, referencias, linhaCabecalho);
-            definirLargurasColunas(sheet);
+            int linhaCabecalho = addTitle(workbook, sheet);
+            addTable(workbook, sheet, referencias, linhaCabecalho);
+            setColumnWidths(sheet);
 
             workbook.write(outputStream);
             return outputStream.toByteArray();
@@ -50,7 +50,7 @@ public class ReferenciaExcelExportService {
         }
     }
 
-    private int adicionarTitulo(Workbook workbook, Sheet sheet) {
+    private int addTitle(Workbook workbook, Sheet sheet) {
         Font tituloFont = workbook.createFont();
         tituloFont.setBold(true);
         tituloFont.setFontHeightInPoints((short) 16);
@@ -80,10 +80,10 @@ public class ReferenciaExcelExportService {
         return 3;
     }
 
-    private void adicionarTabela(Workbook workbook, Sheet sheet, List<Referencia> referencias, int linhaCabecalho) {
-        CellStyle headerStyle = criarEstiloCabecalho(workbook);
-        CellStyle cellStyle = criarEstiloCelula(workbook, false);
-        CellStyle moedaStyle = criarEstiloCelula(workbook, true);
+    private void addTable(Workbook workbook, Sheet sheet, List<Referencia> referencias, int linhaCabecalho) {
+        CellStyle headerStyle = createHeaderStyle(workbook);
+        CellStyle cellStyle = createCellStyle(workbook, false);
+        CellStyle moedaStyle = createCellStyle(workbook, true);
 
         Row headerRow = sheet.createRow(linhaCabecalho);
         for (int i = 0; i < HEADERS.length; i++) {
@@ -137,7 +137,7 @@ public class ReferenciaExcelExportService {
         }
     }
 
-    private CellStyle criarEstiloCabecalho(Workbook workbook) {
+    private CellStyle createHeaderStyle(Workbook workbook) {
         Font headerFont = workbook.createFont();
         headerFont.setBold(true);
         headerFont.setFontHeightInPoints((short) 10);
@@ -149,11 +149,11 @@ public class ReferenciaExcelExportService {
         headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
         headerStyle.setAlignment(HorizontalAlignment.CENTER);
         headerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
-        aplicarBordas(headerStyle);
+        applyBorders(headerStyle);
         return headerStyle;
     }
 
-    private CellStyle criarEstiloCelula(Workbook workbook, boolean moeda) {
+    private CellStyle createCellStyle(Workbook workbook, boolean moeda) {
         Font cellFont = workbook.createFont();
         cellFont.setFontHeightInPoints((short) 9);
 
@@ -161,7 +161,7 @@ public class ReferenciaExcelExportService {
         cellStyle.setFont(cellFont);
         cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
         cellStyle.setWrapText(true);
-        aplicarBordas(cellStyle);
+        applyBorders(cellStyle);
 
         if (moeda) {
             DataFormat formatoDados = workbook.createDataFormat();
@@ -171,14 +171,14 @@ public class ReferenciaExcelExportService {
         return cellStyle;
     }
 
-    private void aplicarBordas(CellStyle style) {
+    private void applyBorders(CellStyle style) {
         style.setBorderTop(BorderStyle.THIN);
         style.setBorderBottom(BorderStyle.THIN);
         style.setBorderLeft(BorderStyle.THIN);
         style.setBorderRight(BorderStyle.THIN);
     }
 
-    private void definirLargurasColunas(Sheet sheet) {
+    private void setColumnWidths(Sheet sheet) {
         for (int i = 0; i < LARGURAS_COLUNAS.length; i++) {
             sheet.setColumnWidth(i, LARGURAS_COLUNAS[i] * 256);
         }

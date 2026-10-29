@@ -13,8 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
+@Slf4j
 public class ReferenciaService {
     private final ReferenciaRepository referenciaRepository;
 

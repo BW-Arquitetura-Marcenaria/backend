@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,7 +33,7 @@ public class RastreabilidadeController {
         var rastreabilidadeFindAll = rastreabilidadeService.findAll(pageable);
         var response = mapper.toRastreabilidadeGetResponseDTO(rastreabilidadeFindAll);
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @PostMapping()
@@ -40,7 +41,7 @@ public class RastreabilidadeController {
         var rastreabilidadeSaved = rastreabilidadeService.save(mapper.toRastreabilidade(rastreabilidadePostRequestDTO));
         var response = mapper.toRastreabilidadeGetResponseDTO(rastreabilidadeSaved);
 
-        return ResponseEntity.status(201).body(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PutMapping("/{id}")
@@ -51,14 +52,14 @@ public class RastreabilidadeController {
         var rastreabilidadeUpdated = rastreabilidadeService.update(id, mapper.toRastreabilidade(rastreabilidadePutRequestDTO));
         var response = mapper.toRastreabilidadeGetResponseDTO(rastreabilidadeUpdated);
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         rastreabilidadeService.delete(id);
 
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @GetMapping("projeto/{projetoId}")
@@ -70,6 +71,6 @@ public class RastreabilidadeController {
         var response = rastreabilidadeService.listAllByProjeto(projetoId, pageable)
                 .map(mapper::toRastreabilidadeGetResponseDTO);
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }

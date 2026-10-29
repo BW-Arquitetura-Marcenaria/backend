@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,7 +33,7 @@ public class ProjetoController {
         var projetoFindAll = projetoService.findAll(pageable);
         var response = mapper.toProjetoGetResponseDTO(projetoFindAll);
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @GetMapping("/{id}")
@@ -40,7 +41,7 @@ public class ProjetoController {
         var projeto = projetoService.findById(id);
         var response = mapper.toProjetoGetResponseDTO(projeto);
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @PostMapping()
@@ -50,7 +51,7 @@ public class ProjetoController {
                 projetoPostRequestDTO.clienteId());
         var response = mapper.toProjetoGetResponseDTO(projetoSaved);
 
-        return ResponseEntity.status(201).body(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PutMapping("/{id}")
@@ -61,13 +62,13 @@ public class ProjetoController {
         var projetoUpdated = projetoService.update(id, mapper.toProjeto(projetoPutRequestDTO));
         var response = mapper.toProjetoGetResponseDTO(projetoUpdated);
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         projetoService.delete(id);
 
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }
