@@ -1,12 +1,11 @@
 package br.com.bw.backend.service;
 
-import br.com.bw.backend.config.CredenciaisGoogleCalendarService;
 import br.com.bw.backend.config.GoogleCalendarProperties;
-import br.com.bw.backend.dto.request.CriarEventoGoogleRequest;
-import br.com.bw.backend.dto.response.EventoAlteradoGoogleResponse;
-import br.com.bw.backend.dto.response.EventoGoogleResponse;
-import br.com.bw.backend.dto.response.GoogleCalendarResponse;
-import br.com.bw.backend.dto.response.ResultadoSincronizacaoGoogle;
+import br.com.bw.backend.dto.request.GoogleCalendarEventoPostRequestDTO;
+import br.com.bw.backend.dto.response.GoogleCalendarEventoAlteradoGetResponseDTO;
+import br.com.bw.backend.dto.response.GoogleCalendarEventoPostResponseDTO;
+import br.com.bw.backend.dto.response.GoogleCalendarGetResponseDTO;
+import br.com.bw.backend.dto.response.GoogleCalendarSincronizacaoGetResponseDTO;
 import br.com.bw.backend.exception.BusinessValidationException;
 import br.com.bw.backend.exception.GoogleCalendarDesconectadoException;
 import br.com.bw.backend.exception.GoogleCalendarSyncTokenInvalidoException;
@@ -35,8 +34,8 @@ import java.util.Date;
 import java.util.List;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
+@Slf4j
 public class GoogleCalendarService {
 
     private static final String MENSAGEM_DESCONECTADO =
@@ -46,12 +45,12 @@ public class GoogleCalendarService {
     private final GoogleCalendarProperties properties;
     private final CredenciaisGoogleCalendarService credenciaisService;
 
-    public Calendar obterCliente() throws IOException, GeneralSecurityException {
+    public Calendar getClient() throws IOException, GeneralSecurityException {
 
         String refreshToken;
 
         try {
-            refreshToken = credenciaisService.obterRefreshToken();
+            refreshToken = credenciaisService.getRefreshToken();
         } catch (IllegalStateException e) {
             throw new GoogleCalendarDesconectadoException(MENSAGEM_DESCONECTADO);
         }
@@ -78,10 +77,10 @@ public class GoogleCalendarService {
                 .build();
     }
 
-    public List<GoogleCalendarResponse> listarCalendarios()
+    public List<GoogleCalendarGetResponseDTO> listCalendars()
             throws IOException, GeneralSecurityException {
 
-        Calendar cliente = obterCliente();
+        Calendar cliente = getClient();
 
         CalendarList calendarios = cliente.calendarList()
                 .list()
@@ -89,7 +88,7 @@ public class GoogleCalendarService {
 
         return calendarios.getItems()
                 .stream()
-                .map(calendario -> new GoogleCalendarResponse(
+                .map(calendario -> new GoogleCalendarGetResponseDTO(
                         calendario.getId(),
                         calendario.getSummary(),
                         calendario.getTimeZone(),
@@ -99,7 +98,7 @@ public class GoogleCalendarService {
     }
 
 
-    public EventoGoogleResponse criarEvento(CriarEventoGoogleRequest request)
+    public GoogleCalendarEventoPostResponseDTO createEvent(GoogleCalendarEventoPostRequestDTO request)
             throws IOException, GeneralSecurityException {
 
         if (request == null
@@ -139,37 +138,37 @@ public class GoogleCalendarService {
                 ))
                 .setTimeZone(fuso.getId()));
 
-        Calendar cliente = obterCliente();
+        Calendar cliente = getClient();
 
         Event criado = cliente.events()
                 .insert(properties.getCalendarId(), evento)
                 .execute();
 
-        return new EventoGoogleResponse(
+        return new GoogleCalendarEventoPostResponseDTO(
                 criado.getId(),
                 criado.getSummary(),
                 criado.getHtmlLink()
         );
     }
 
-    public void excluirEvento(String googleEventId) throws IOException, GeneralSecurityException {
+    public void deleteEvent(String googleEventId) throws IOException, GeneralSecurityException {
         if (googleEventId == null || googleEventId.isBlank()) {
             return;
         }
 
-        Calendar cliente = obterCliente();
+        Calendar cliente = getClient();
 
         cliente.events()
                 .delete(properties.getCalendarId(), googleEventId)
                 .execute();
     }
 
-    public ResultadoSincronizacaoGoogle sincronizarAlteracoes(String syncTokenAtual)
+    public GoogleCalendarSincronizacaoGetResponseDTO synchronizeChanges(String syncTokenAtual)
             throws IOException, GeneralSecurityException {
 
-        Calendar cliente = obterCliente();
+        Calendar cliente = getClient();
 
-        List<EventoAlteradoGoogleResponse> eventos = new ArrayList<>();
+        List<GoogleCalendarEventoAlteradoGetResponseDTO> eventos = new ArrayList<>();
         String pageToken = null;
         String proximoSyncToken = null;
 
@@ -201,11 +200,11 @@ public class GoogleCalendarService {
 
             if (pagina.getItems() != null) {
                 for (Event evento : pagina.getItems()) {
-                    eventos.add(new EventoAlteradoGoogleResponse(
+                    eventos.add(new GoogleCalendarEventoAlteradoGetResponseDTO(
                             evento.getId(),
                             evento.getStatus(),
-                            converterParaLocalDateTime(evento.getStart()),
-                            converterParaLocalDateTime(evento.getEnd())
+                            convertToLocalDateTime(evento.getStart()),
+                            convertToLocalDateTime(evento.getEnd())
                     ));
                 }
             }
@@ -217,10 +216,10 @@ public class GoogleCalendarService {
             }
         } while (pageToken != null);
 
-        return new ResultadoSincronizacaoGoogle(eventos, proximoSyncToken);
+        return new GoogleCalendarSincronizacaoGetResponseDTO(eventos, proximoSyncToken);
     }
 
-    private LocalDateTime converterParaLocalDateTime(EventDateTime dataEvento) {
+    private LocalDateTime convertToLocalDateTime(EventDateTime dataEvento) {
         if (dataEvento == null) {
             return null;
         }

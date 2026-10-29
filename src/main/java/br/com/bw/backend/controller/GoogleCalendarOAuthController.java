@@ -4,6 +4,7 @@ import br.com.bw.backend.config.GoogleCalendarProperties;
 import br.com.bw.backend.service.EstadoOAuthGoogleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,12 +31,12 @@ public class GoogleCalendarOAuthController {
     private final GoogleCalendarProperties googleCalendarProperties;
 
     @PostMapping("/autorizar")
-    public ResponseEntity<GoogleAuthorizationUrlResponse> autorizar() {
+    public ResponseEntity<GoogleAuthorizationUrlResponse> authorize() {
 
-        String estado = estadoOAuthGoogleService.gerarValorAleatorio();
-        String vinculoNavegador = estadoOAuthGoogleService.gerarValorAleatorio();
+        String estado = estadoOAuthGoogleService.generateRandomValue();
+        String vinculoNavegador = estadoOAuthGoogleService.generateRandomValue();
 
-        estadoOAuthGoogleService.criarEstado(estado, vinculoNavegador);
+        estadoOAuthGoogleService.createState(estado, vinculoNavegador);
 
         String urlAutorizacao = UriComponentsBuilder
                 .fromUriString(URL_AUTORIZACAO_GOOGLE)
@@ -60,7 +61,7 @@ public class GoogleCalendarOAuthController {
                 .maxAge(Duration.ofMinutes(VALIDADE_MINUTOS))
                 .build();
 
-        return ResponseEntity.ok()
+        return ResponseEntity.status(HttpStatus.OK)
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
                 .body(new GoogleAuthorizationUrlResponse(urlAutorizacao));
     }

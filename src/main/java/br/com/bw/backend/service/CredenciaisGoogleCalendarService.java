@@ -1,4 +1,4 @@
-package br.com.bw.backend.config;
+package br.com.bw.backend.service;
 
 import br.com.bw.backend.entity.CredenciaisGoogleCalendar;
 import br.com.bw.backend.repository.CredenciaisGoogleCalendarRepository;
@@ -16,7 +16,7 @@ public class CredenciaisGoogleCalendarService {
     private final GoogleTokenEncryptionService encryptionService;
 
     @Transactional
-    public void salvarOuAtualizar(String refreshToken, String escopo) {
+    public void saveOrUpdate(String refreshToken, String escopo) {
 
         if (refreshToken == null || refreshToken.isBlank()) {
             throw new IllegalArgumentException(
@@ -35,7 +35,7 @@ public class CredenciaisGoogleCalendarService {
                 .orElseGet(CredenciaisGoogleCalendar::new);
 
         credenciais.setTokenAtualizacaoCriptografado(
-                encryptionService.criptografar(refreshToken)
+                encryptionService.encrypt(refreshToken)
         );
 
         credenciais.setEscopo(escopo);
@@ -44,30 +44,29 @@ public class CredenciaisGoogleCalendarService {
     }
 
     @Transactional(readOnly = true)
-    public String obterRefreshToken() {
+    public String getRefreshToken() {
         CredenciaisGoogleCalendar credenciais = repository
                 .findFirstByOrderByIdAsc()
                 .orElseThrow(() -> new IllegalStateException(
                         "O Google Calendar ainda não foi conectado."
                 ));
 
-        return encryptionService.descriptografar(
+        return encryptionService.decrypt(
                 credenciais.getTokenAtualizacaoCriptografado()
         );
     }
 
     @Transactional(readOnly = true)
-    public Optional<String> obterSyncToken() {
+    public Optional<String> getSyncToken() {
         return repository.findFirstByOrderByIdAsc()
                 .map(CredenciaisGoogleCalendar::getSyncToken);
     }
 
     @Transactional
-    public void salvarSyncToken(String syncToken) {
+    public void saveSyncToken(String syncToken) {
         repository.findFirstByOrderByIdAsc().ifPresent(credenciais -> {
             credenciais.setSyncToken(syncToken);
             repository.save(credenciais);
         });
     }
 }
-

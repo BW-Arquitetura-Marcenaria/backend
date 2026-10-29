@@ -1,13 +1,14 @@
 package br.com.bw.backend.controller;
 
-import br.com.bw.backend.dto.request.DecisaoAgendamentoRequest;
-import br.com.bw.backend.dto.request.SolicitacaoAgendamentoRequest;
-import br.com.bw.backend.dto.response.AgendamentoResponse;
+import br.com.bw.backend.dto.request.AgendamentoDecisaoPutRequestDTO;
+import br.com.bw.backend.dto.request.AgendamentoPostRequestDTO;
+import br.com.bw.backend.dto.response.AgendamentoGetResponseDTO;
 import br.com.bw.backend.entity.Agendamento;
 import br.com.bw.backend.mapper.AgendamentoMapper;
 import br.com.bw.backend.service.AgendamentoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -24,13 +25,13 @@ public class AgendamentoController {
     private final AgendamentoMapper agendamentoMapper;
 
     @PostMapping
-    public ResponseEntity<AgendamentoResponse> solicitar(
+    public ResponseEntity<AgendamentoGetResponseDTO> request(
             Authentication authentication,
-            @RequestBody @Valid SolicitacaoAgendamentoRequest request
+            @RequestBody @Valid AgendamentoPostRequestDTO request
     ) {
         Integer usuarioId = (Integer) authentication.getPrincipal();
 
-        Agendamento agendamento = agendamentoService.solicitar(
+        Agendamento agendamento = agendamentoService.request(
                 usuarioId,
                 request.titulo(),
                 request.descricao(),
@@ -38,20 +39,20 @@ public class AgendamentoController {
                 request.fim()
         );
 
-        AgendamentoResponse response = agendamentoMapper.toResponse(agendamento);
+        AgendamentoGetResponseDTO response = agendamentoMapper.toResponse(agendamento);
 
-        return ResponseEntity.status(201).body(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PostMapping("/admin")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<AgendamentoResponse> criarComoAdmin(
+    public ResponseEntity<AgendamentoGetResponseDTO> createAsAdmin(
             Authentication authentication,
-            @RequestBody @Valid SolicitacaoAgendamentoRequest request
+            @RequestBody @Valid AgendamentoPostRequestDTO request
     ) {
         Integer adminId = (Integer) authentication.getPrincipal();
 
-        Agendamento agendamento = agendamentoService.criarEAprovarComoAdmin(
+        Agendamento agendamento = agendamentoService.createAndApproveAsAdmin(
                 adminId,
                 request.titulo(),
                 request.descricao(),
@@ -60,49 +61,48 @@ public class AgendamentoController {
                 "Criado diretamente pelo admin."
         );
 
-        AgendamentoResponse response = agendamentoMapper.toResponse(agendamento);
+        AgendamentoGetResponseDTO response = agendamentoMapper.toResponse(agendamento);
 
-        return ResponseEntity.status(201).body(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping("/admin")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<AgendamentoResponse>> listarTodos() {
-        List<AgendamentoResponse> respostas = agendamentoService
-                .listarTodos()
+    public ResponseEntity<List<AgendamentoGetResponseDTO>> findAll() {
+        List<AgendamentoGetResponseDTO> respostas = agendamentoService
+                .findAll()
                 .stream()
                 .map(agendamentoMapper::toResponse)
                 .toList();
 
-        return ResponseEntity.ok(respostas);
+        return ResponseEntity.status(HttpStatus.OK).body(respostas);
     }
 
     @PatchMapping("/{id}/aprovado")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<AgendamentoResponse> aprovar(
+    public ResponseEntity<AgendamentoGetResponseDTO> approve(
             @PathVariable Integer id,
-            @Valid @RequestBody DecisaoAgendamentoRequest request
+            @Valid @RequestBody AgendamentoDecisaoPutRequestDTO request
     ) {
-        Agendamento agendamento = agendamentoService.aprovar(
+        Agendamento agendamento = agendamentoService.approve(
                 id,
                 request.observacao()
         );
 
-        return ResponseEntity.ok(agendamentoMapper.toResponse(agendamento));
+        return ResponseEntity.status(HttpStatus.OK).body(agendamentoMapper.toResponse(agendamento));
     }
 
     @PatchMapping("/{id}/recusado")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<AgendamentoResponse> recusar(
+    public ResponseEntity<AgendamentoGetResponseDTO> reject(
             @PathVariable Integer id,
-            @Valid @RequestBody DecisaoAgendamentoRequest request
+            @Valid @RequestBody AgendamentoDecisaoPutRequestDTO request
     ) {
-        Agendamento agendamento = agendamentoService.recusar(
+        Agendamento agendamento = agendamentoService.reject(
                 id,
                 request.observacao()
         );
 
-        return ResponseEntity.ok(agendamentoMapper.toResponse(agendamento));
+        return ResponseEntity.status(HttpStatus.OK).body(agendamentoMapper.toResponse(agendamento));
     }
 }
-

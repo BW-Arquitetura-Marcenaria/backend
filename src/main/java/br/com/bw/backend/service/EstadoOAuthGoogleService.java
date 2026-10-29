@@ -23,7 +23,7 @@ public class EstadoOAuthGoogleService {
     private final SecureRandom secureRandom = new SecureRandom();
 
     @Transactional
-    public EstadoOAuthGoogle criarEstado(String estado, String vinculoNavegador) {
+    public EstadoOAuthGoogle createState(String estado, String vinculoNavegador) {
         EstadoOAuthGoogle registro = new EstadoOAuthGoogle();
 
         registro.setHashEstado(HashUtil.sha256(estado));
@@ -35,7 +35,7 @@ public class EstadoOAuthGoogleService {
         return repository.save(registro);
     }
 
-    public String gerarValorAleatorio() {
+    public String generateRandomValue() {
         byte[] bytes = new byte[TAMANHO_BYTES];
         secureRandom.nextBytes(bytes);
 
@@ -45,7 +45,7 @@ public class EstadoOAuthGoogleService {
     }
 
     @Transactional
-    public boolean consumirEstado(String estado, String vinculoNavegador) {
+    public boolean consumeState(String estado, String vinculoNavegador) {
 
         if (estado == null || estado.isBlank()
                 || vinculoNavegador == null || vinculoNavegador.isBlank()) {
