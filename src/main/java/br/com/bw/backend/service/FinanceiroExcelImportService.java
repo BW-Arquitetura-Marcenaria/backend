@@ -1,6 +1,6 @@
 package br.com.bw.backend.service;
 
-import br.com.bw.backend.dto.response.FinanceiroImportResultDTO;
+import br.com.bw.backend.dto.response.FinanceiroImportPostResponseDTO;
 import br.com.bw.backend.entity.Financeiro;
 import br.com.bw.backend.exception.BusinessValidationException;
 import br.com.bw.backend.repository.FinanceiroRepository;
@@ -19,8 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
+@Slf4j
 public class FinanceiroExcelImportService {
 
     private static final DateTimeFormatter DATA_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -44,7 +44,7 @@ public class FinanceiroExcelImportService {
     private final FinanceiroRepository financeiroRepository;
     private final DataFormatter dataFormatter = new DataFormatter();
 
-    public FinanceiroImportResultDTO importarExcel(MultipartFile arquivo) {
+    public FinanceiroImportPostResponseDTO importExcel(MultipartFile arquivo) {
         if (arquivo == null || arquivo.isEmpty()) {
             throw new BusinessValidationException("Arquivo de importação não enviado ou vazio");
         }
@@ -54,7 +54,7 @@ public class FinanceiroExcelImportService {
         try (Workbook workbook = WorkbookFactory.create(arquivo.getInputStream())) {
             Sheet sheet = workbook.getSheetAt(0);
 
-            int linhaCabecalho = localizarLinhaCabecalho(sheet);
+            int linhaCabecalho = findHeaderRow(sheet);
             if (linhaCabecalho == -1) {
                 throw new BusinessValidationException(
                         "Não foi possível localizar o cabeçalho da planilha. Utilize o modelo gerado pela exportação");
@@ -66,7 +66,7 @@ public class FinanceiroExcelImportService {
 
             for (int i = linhaCabecalho + 1; i <= sheet.getLastRowNum(); i++) {
                 Row row = sheet.getRow(i);
-                if (linhaVazia(row)) {
+                if (isRowEmpty(row)) {
                     continue;
                 }
 
@@ -74,7 +74,7 @@ public class FinanceiroExcelImportService {
                 int numeroLinha = i + 1;
 
                 try {
-                    Financeiro financeiro = converterLinha(row);
+                    Financeiro financeiro = convertRow(row);
                     financeiroRepository.save(financeiro);
                     totalImportado++;
                 } catch (Exception e) {
@@ -86,21 +86,21 @@ public class FinanceiroExcelImportService {
             log.info("Importação de registros financeiros concluída - processadas: {}, importadas: {}, erros: {}",
                     totalLinhasProcessadas, totalImportado, erros.size());
 
-            return new FinanceiroImportResultDTO(totalLinhasProcessadas, totalImportado, erros);
+            return new FinanceiroImportPostResponseDTO(totalLinhasProcessadas, totalImportado, erros);
         } catch (IOException e) {
             log.error("Erro ao ler planilha de importação do financeiro", e);
             throw new BusinessValidationException("Não foi possível ler o arquivo enviado. Verifique se é um Excel (.xlsx) válido");
         }
     }
 
-    private int localizarLinhaCabecalho(Sheet sheet) {
+    private int findHeaderRow(Sheet sheet) {
         for (int i = 0; i <= Math.min(sheet.getLastRowNum(), 10); i++) {
             Row row = sheet.getRow(i);
             if (row == null) {
                 continue;
             }
 
-            String primeiraCelula = lerTexto(row.getCell(COL_DESCRICAO));
+            String primeiraCelula = readText(row.getCell(COL_DESCRICAO));
             if ("Descrição".equalsIgnoreCase(primeiraCelula)) {
                 return i;
             }
@@ -108,23 +108,23 @@ public class FinanceiroExcelImportService {
         return -1;
     }
 
-    private boolean linhaVazia(Row row) {
+    private boolean isRowEmpty(Row row) {
         if (row == null) {
             return true;
         }
         for (int c = 0; c < TOTAL_COLUNAS; c++) {
-            if (!lerTexto(row.getCell(c)).isBlank()) {
+            if (!readText(row.getCell(c)).isBlank()) {
                 return false;
             }
         }
         return true;
     }
 
-    private Financeiro converterLinha(Row row) {
-        Integer quantidade = lerInteiro(row.getCell(COL_QUANTIDADE));
-        BigDecimal valor = lerDecimal(row.getCell(COL_VALOR));
-        BigDecimal frete = lerDecimal(row.getCell(COL_FRETE));
-        BigDecimal valorTotal = lerDecimal(row.getCell(COL_VALOR_TOTAL));
+    private Financeiro convertRow(Row row) {
+        Integer quantidade = readInteger(row.getCell(COL_QUANTIDADE));
+        BigDecimal valor = readDecimal(row.getCell(COL_VALOR));
+        BigDecimal frete = readDecimal(row.getCell(COL_FRETE));
+        BigDecimal valorTotal = readDecimal(row.getCell(COL_VALOR_TOTAL));
 
         if (quantidade == null) {
             throw new BusinessValidationException("Quantidade é obrigatória");
@@ -140,36 +140,36 @@ public class FinanceiroExcelImportService {
         }
 
         return Financeiro.builder()
-                .descricao(lerStringOpcional(row.getCell(COL_DESCRICAO)))
+                .descricao(readOptionalString(row.getCell(COL_DESCRICAO)))
                 .quantidade(quantidade)
                 .valor(valor)
                 .frete(frete)
                 .valorTotal(valorTotal)
-                .valorFinalDesconto(lerDecimal(row.getCell(COL_VALOR_FINAL_DESCONTO)))
-                .valorEntrada(lerDecimal(row.getCell(COL_VALOR_ENTRADA)))
-                .receberEntrega(lerDecimal(row.getCell(COL_RECEBER_ENTREGA)))
-                .valorRecebidoFinal(lerDecimal(row.getCell(COL_VALOR_RECEBIDO_FINAL)))
-                .valorTotalLiquido(lerDecimal(row.getCell(COL_VALOR_TOTAL_LIQUIDO)))
-                .dataPedido(lerData(row.getCell(COL_DATA_PEDIDO)))
-                .dataEntrega(lerData(row.getCell(COL_DATA_ENTREGA)))
-                .contatoCliente(lerStringOpcional(row.getCell(COL_CONTATO_CLIENTE)))
-                .regiaoVenda(lerStringOpcional(row.getCell(COL_REGIAO_VENDA)))
+                .valorFinalDesconto(readDecimal(row.getCell(COL_VALOR_FINAL_DESCONTO)))
+                .valorEntrada(readDecimal(row.getCell(COL_VALOR_ENTRADA)))
+                .receberEntrega(readDecimal(row.getCell(COL_RECEBER_ENTREGA)))
+                .valorRecebidoFinal(readDecimal(row.getCell(COL_VALOR_RECEBIDO_FINAL)))
+                .valorTotalLiquido(readDecimal(row.getCell(COL_VALOR_TOTAL_LIQUIDO)))
+                .dataPedido(readDate(row.getCell(COL_DATA_PEDIDO)))
+                .dataEntrega(readDate(row.getCell(COL_DATA_ENTREGA)))
+                .contatoCliente(readOptionalString(row.getCell(COL_CONTATO_CLIENTE)))
+                .regiaoVenda(readOptionalString(row.getCell(COL_REGIAO_VENDA)))
                 .build();
     }
 
-    private String lerTexto(Cell cell) {
+    private String readText(Cell cell) {
         if (cell == null) {
             return "";
         }
         return dataFormatter.formatCellValue(cell).trim();
     }
 
-    private String lerStringOpcional(Cell cell) {
-        String valor = lerTexto(cell);
+    private String readOptionalString(Cell cell) {
+        String valor = readText(cell);
         return (valor.isBlank() || valor.equals("-")) ? null : valor;
     }
 
-    private Integer lerInteiro(Cell cell) {
+    private Integer readInteger(Cell cell) {
         if (cell == null) {
             return null;
         }
@@ -177,7 +177,7 @@ public class FinanceiroExcelImportService {
             return (int) cell.getNumericCellValue();
         }
 
-        String texto = lerTexto(cell);
+        String texto = readText(cell);
         if (texto.isBlank() || texto.equals("-")) {
             return null;
         }
@@ -188,7 +188,7 @@ public class FinanceiroExcelImportService {
         }
     }
 
-    private BigDecimal lerDecimal(Cell cell) {
+    private BigDecimal readDecimal(Cell cell) {
         if (cell == null) {
             return null;
         }
@@ -196,7 +196,7 @@ public class FinanceiroExcelImportService {
             return BigDecimal.valueOf(cell.getNumericCellValue());
         }
 
-        String texto = lerTexto(cell);
+        String texto = readText(cell);
         if (texto.isBlank() || texto.equals("-")) {
             return null;
         }
@@ -215,7 +215,7 @@ public class FinanceiroExcelImportService {
         }
     }
 
-    private LocalDate lerData(Cell cell) {
+    private LocalDate readDate(Cell cell) {
         if (cell == null) {
             return null;
         }
@@ -223,7 +223,7 @@ public class FinanceiroExcelImportService {
             return cell.getLocalDateTimeCellValue().toLocalDate();
         }
 
-        String texto = lerTexto(cell);
+        String texto = readText(cell);
         if (texto.isBlank() || texto.equals("-")) {
             return null;
         }

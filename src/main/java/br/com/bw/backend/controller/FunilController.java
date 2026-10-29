@@ -22,19 +22,19 @@ public class FunilController {
     private final FunilService service;
 
     @GetMapping
-    public FunilGetResponseDTO listar() {
-        return service.listar();
+    public FunilGetResponseDTO findAll() {
+        return service.findAll();
     }
 
     @GetMapping("/{clienteId}")
-    public FunilDetalheGetResponseDTO detalhar(@PathVariable Integer clienteId) {
-        return service.detalhar(clienteId);
+    public FunilDetalheGetResponseDTO findDetailsById(@PathVariable Integer clienteId) {
+        return service.findDetailsById(clienteId);
     }
 
     @PutMapping("/{clienteId}/etapa")
-    public FunilDetalheGetResponseDTO alterarEtapa(@AuthenticationPrincipal Integer adminId,
+    public FunilDetalheGetResponseDTO updateStage(@AuthenticationPrincipal Integer adminId,
                                                    @PathVariable Integer clienteId,
                                                    @RequestBody @Valid FunilEtapaPutRequestDTO dto) {
-        return service.alterarEtapa(adminId, clienteId, dto);
+        return service.updateStage(adminId, clienteId, dto);
     }
 }
