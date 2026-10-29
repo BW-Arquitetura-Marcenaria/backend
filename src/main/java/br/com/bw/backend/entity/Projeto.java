@@ -7,13 +7,13 @@ import lombok.*;
 import java.math.BigDecimal;
 
 @Entity
-@Builder
+@Table(name = "projetos")
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@Table(name = "projetos")
 public class Projeto {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

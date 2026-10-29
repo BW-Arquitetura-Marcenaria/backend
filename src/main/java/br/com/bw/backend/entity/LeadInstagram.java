@@ -8,9 +8,9 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
+@Table(name = "lead_instagram")
 @Getter
 @Setter
-@Table(name = "lead_instagram")
 public class LeadInstagram {
 
     @Id

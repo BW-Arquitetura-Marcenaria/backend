@@ -7,13 +7,13 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
-@Builder
+@Table(name = "financeiro")
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@Table(name = "financeiro")
 public class Financeiro {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

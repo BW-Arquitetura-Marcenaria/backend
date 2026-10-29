@@ -6,13 +6,13 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Builder
+@Table(name = "estado_oauth_google")
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@Table(name = "estado_oauth_google")
 public class EstadoOAuthGoogle {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -23,13 +23,13 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 @Entity
-@Builder
+@Table(name = "convite_admin")
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@Table(name = "convite_admin")
 public class ConviteAdmin {
 
     @Id

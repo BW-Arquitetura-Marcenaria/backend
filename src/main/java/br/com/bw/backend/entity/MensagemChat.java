@@ -23,13 +23,13 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 @Entity
-@Builder
+@Table(name = "mensagens_chat")
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@Table(name = "mensagens_chat")
 public class MensagemChat {
 
     @Id

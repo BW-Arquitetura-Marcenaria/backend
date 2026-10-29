@@ -8,13 +8,13 @@ import org.hibernate.generator.EventType;
 import java.time.LocalDateTime;
 
 @Entity
-@Builder
+@Table(name = "empresa")
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@Table(name = "empresa")
 public class Empresa {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

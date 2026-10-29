@@ -6,13 +6,13 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Builder
+@Table(name = "credenciais_google_calendar")
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@Table(name = "credenciais_google_calendar")
 public class CredenciaisGoogleCalendar {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,4 +34,3 @@ public class CredenciaisGoogleCalendar {
     @Column(name = "data_atualizacao", insertable = false, updatable = false)
     private LocalDateTime dataAtualizacao;
 }
-

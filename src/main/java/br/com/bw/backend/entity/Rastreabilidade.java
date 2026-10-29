@@ -6,13 +6,13 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Builder
+@Table(name = "rastreabilidade_madeira")
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@Table(name = "rastreabilidade_madeira")
 public class Rastreabilidade {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
