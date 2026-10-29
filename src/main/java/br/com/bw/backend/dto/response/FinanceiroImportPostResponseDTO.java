@@ -2,7 +2,7 @@ package br.com.bw.backend.dto.response;
 
 import java.util.List;
 
-public record FinanceiroImportResultDTO(
+public record FinanceiroImportPostResponseDTO(
         int totalLinhasProcessadas,
         int totalImportado,
         List<String> erros

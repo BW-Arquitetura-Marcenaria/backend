@@ -4,7 +4,7 @@ import br.com.bw.backend.entity.enums.StatusAgendamento;
 
 import java.time.LocalDateTime;
 
-public record AgendamentoResponse(
+public record AgendamentoGetResponseDTO(
         Integer id,
         String titulo,
         String descricao,
