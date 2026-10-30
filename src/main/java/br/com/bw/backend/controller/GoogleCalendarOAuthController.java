@@ -2,6 +2,12 @@ package br.com.bw.backend.controller;
 
 import br.com.bw.backend.config.GoogleCalendarProperties;
 import br.com.bw.backend.service.EstadoOAuthGoogleService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -17,6 +23,8 @@ import java.time.Duration;
 @RestController
 @RequestMapping("/v1/api/admin/google-calendar")
 @RequiredArgsConstructor
+@Tag(name = "Google Calendar", description = "Fluxo de autorização OAuth2 para conectar o Google Calendar (apenas ADMIN)")
+@SecurityRequirement(name = "bearerAuth")
 public class GoogleCalendarOAuthController {
 
     private static final String URL_AUTORIZACAO_GOOGLE =
@@ -31,6 +39,15 @@ public class GoogleCalendarOAuthController {
     private final GoogleCalendarProperties googleCalendarProperties;
 
     @PostMapping("/autorizar")
+    @Operation(
+            summary = "Iniciar autorização do Google Calendar",
+            description = "Gera a URL de consentimento do Google OAuth2 que o administrador deve abrir no navegador "
+                    + "para autorizar o acesso ao Google Calendar. O callback é recebido em GET /login/oauth2/code/google.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "URL de autorização gerada com sucesso"),
+            @ApiResponse(responseCode = "401", description = "Token ausente ou inválido"),
+            @ApiResponse(responseCode = "403", description = "Usuário não é administrador")
+    })
     public ResponseEntity<GoogleAuthorizationUrlResponse> authorize() {
 
         String estado = estadoOAuthGoogleService.generateRandomValue();
@@ -66,6 +83,8 @@ public class GoogleCalendarOAuthController {
                 .body(new GoogleAuthorizationUrlResponse(urlAutorizacao));
     }
 
+    @Schema(description = "URL de consentimento do Google OAuth2 para ser aberta pelo administrador")
     public record GoogleAuthorizationUrlResponse(String authorizationUrl) {
     }
 }
+
