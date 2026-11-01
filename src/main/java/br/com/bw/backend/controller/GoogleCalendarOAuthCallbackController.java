@@ -7,6 +7,12 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeToken
 import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
+import io.swagger.v3.oas.annotations.Hidden;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -25,6 +31,7 @@ import java.time.Duration;
 
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "Google Calendar", description = "Callback público do OAuth2 do Google (chamado pelo próprio Google, não pelo front-end)")
 public class GoogleCalendarOAuthCallbackController {
 
     private static final String COOKIE_VINCULO_NAVEGADOR =
@@ -35,9 +42,23 @@ public class GoogleCalendarOAuthCallbackController {
     private final CredenciaisGoogleCalendarService credenciaisService;
 
     @GetMapping("/login/oauth2/code/google")
+    @Hidden
+    @Operation(
+            summary = "Callback de autorização do Google",
+            description = "Endpoint público chamado pelo Google após o consentimento do usuário. "
+                    + "Troca o código de autorização pelo refresh token e salva as credenciais da empresa. "
+                    + "Não deve ser chamado manualmente.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Google Calendar conectado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Autorização inválida, expirada ou negada pelo usuário"),
+            @ApiResponse(responseCode = "502", description = "Falha ao trocar o código de autorização com o Google")
+    })
     public ResponseEntity<String> callback(
+            @Parameter(description = "Código de autorização retornado pelo Google")
             @RequestParam(required = false) String code,
+            @Parameter(description = "Valor de estado (CSRF) gerado em /autorizar")
             @RequestParam(required = false) String state,
+            @Parameter(description = "Código de erro retornado pelo Google, quando a autorização é negada")
             @RequestParam(required = false) String error,
             @CookieValue(
                     name = COOKIE_VINCULO_NAVEGADOR,
