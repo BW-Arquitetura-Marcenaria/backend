@@ -42,6 +42,12 @@ integracoes:
         intervalo-ms: ${GOOGLE_CALENDAR_SYNC_INTERVALO_MS:300000}
         atraso-inicial-ms: ${GOOGLE_CALENDAR_SYNC_ATRASO_INICIAL_MS:30000}
 
+  clicksign:
+    base-url: ${CLICKSIGN_BASE_URL:https://sandbox.clicksign.com}
+    access-token: ${CLICKSIGN_ACCESS_TOKEN:}
+    webhook-secret: ${CLICKSIGN_WEBHOOK_SECRET:}
+    auth-method: ${CLICKSIGN_AUTH_METHOD:email}
+
 server:
   port: ${SERVER_PORT:8080}
 
