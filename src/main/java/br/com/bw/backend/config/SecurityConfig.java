@@ -44,6 +44,8 @@ public class SecurityConfig {
                         .requestMatchers("/v1/api/cadastro/**", "/v1/api/auth/**", "/error").permitAll()
                         .requestMatchers("/v1/api/convite-admin/**").permitAll()
 
+                        .requestMatchers("/v1/api/webhooks/clicksign/**").permitAll()
+
                         .requestMatchers("/ws/**").permitAll()
 
                         .requestMatchers("/v1/api/integracoes/**").hasRole("INTEGRACAO")
