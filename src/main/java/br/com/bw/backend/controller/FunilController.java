@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -32,14 +33,18 @@ public class FunilController {
     @GetMapping
     @Operation(
             summary = "Listar funil de vendas",
-            description = "Retorna a visão geral do funil, com a quantidade de clientes/leads em cada etapa.")
+            description = "Retorna a visão geral do funil, com a quantidade de clientes/leads em cada etapa. "
+                    + "Aceita filtrar pela origem do cliente (Todos, Instagram ou Plataforma).")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Funil retornado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Origem inválida"),
             @ApiResponse(responseCode = "401", description = "Token ausente ou inválido"),
             @ApiResponse(responseCode = "403", description = "Usuário não é administrador")
     })
-    public FunilGetResponseDTO findAll() {
-        return service.findAll();
+    public FunilGetResponseDTO findAll(
+            @Parameter(description = "Filtro de origem: Todos, Instagram ou Plataforma (padrão: Todos)")
+            @RequestParam(required = false) String origem) {
+        return service.findAll(origem);
     }
 
     @GetMapping("/{clienteId}")
@@ -70,9 +75,9 @@ public class FunilController {
             @ApiResponse(responseCode = "404", description = "Cliente não encontrado")
     })
     public FunilDetalheGetResponseDTO updateStage(@AuthenticationPrincipal Integer adminId,
-                                                   @Parameter(description = "Identificador do cliente", required = true)
-                                                   @PathVariable Integer clienteId,
-                                                   @RequestBody @Valid FunilEtapaPutRequestDTO dto) {
+                                                  @Parameter(description = "Identificador do cliente", required = true)
+                                                  @PathVariable Integer clienteId,
+                                                  @RequestBody @Valid FunilEtapaPutRequestDTO dto) {
         return service.updateStage(adminId, clienteId, dto);
     }
 }

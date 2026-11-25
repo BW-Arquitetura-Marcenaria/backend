@@ -11,6 +11,7 @@ import br.com.bw.backend.entity.enums.EtapaFunil;
 import br.com.bw.backend.entity.enums.Perfil;
 import br.com.bw.backend.exception.BusinessValidationException;
 import br.com.bw.backend.repository.LeadInstagramRepository;
+import br.com.bw.backend.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -19,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
@@ -29,19 +31,27 @@ import java.util.Map;
 @Slf4j
 public class FunilService {
 
-    private static final String ORIGEM = "Instagram";
-
     private static final List<EtapaFunil> ETAPAS_DO_BOARD = List.of(
+            EtapaFunil.NOVO_LEAD,
+            EtapaFunil.EM_QUALIFICACAO,
             EtapaFunil.QUALIFICADO,
             EtapaFunil.ORCAMENTO_ENVIADO,
             EtapaFunil.EM_NEGOCIACAO,
             EtapaFunil.FECHADO);
 
     private final LeadInstagramRepository leadRepository;
+    private final UsuarioRepository usuarioRepository;
+
+    private record Item(Usuario usuario, LeadInstagram lead) {}
 
     @Transactional(readOnly = true)
-    public FunilGetResponseDTO findAll() {
-        List<LeadInstagram> leads = leadRepository.findParaFunil(Perfil.CLIENTE, ETAPAS_DO_BOARD);
+    public FunilGetResponseDTO findAll(String origemFiltro) {
+        String filtro = normalizeOrigin(origemFiltro);
+
+        List<Item> itens = leadRepository.findClientesComLead(Perfil.CLIENTE).stream()
+                .map(linha -> new Item((Usuario) linha[0], (LeadInstagram) linha[1]))
+                .filter(item -> filtro == null || filtro.equals(getOrigin(item)))
+                .toList();
 
         Map<EtapaFunil, List<FunilCardGetResponseDTO>> porEtapa = new EnumMap<>(EtapaFunil.class);
         ETAPAS_DO_BOARD.forEach(etapa -> porEtapa.put(etapa, new ArrayList<>()));
@@ -51,16 +61,17 @@ public class FunilService {
         long somaScore = 0;
         long comScore = 0;
 
-        for (LeadInstagram lead : leads) {
-            EtapaFunil etapa = lead.getUsuario().getEtapaFunil();
-            porEtapa.get(etapa).add(toCard(lead));
+        for (Item item : itens) {
+            EtapaFunil etapa = getStage(item.usuario());
+            porEtapa.get(etapa).add(toCard(item));
 
             if (etapa != EtapaFunil.FECHADO) {
                 ativas++;
-                if (lead.getOrcamento() != null) {
+                LeadInstagram lead = item.lead();
+                if (lead != null && lead.getOrcamento() != null) {
                     pipeline = pipeline.add(lead.getOrcamento());
                 }
-                if (lead.getScore() != null) {
+                if (lead != null && lead.getScore() != null) {
                     somaScore += lead.getScore();
                     comScore++;
                 }
@@ -82,7 +93,7 @@ public class FunilService {
 
     @Transactional(readOnly = true)
     public FunilDetalheGetResponseDTO findDetailsById(Integer clienteId) {
-        return toDetails(findLeadForFunnel(clienteId));
+        return toDetails(findItemForFunnel(clienteId));
     }
 
     @Transactional
@@ -91,62 +102,108 @@ public class FunilService {
             throw new BusinessValidationException("Etapa inválida para o funil");
         }
 
-        LeadInstagram lead = findLeadForFunnel(clienteId);
-        EtapaFunil anterior = lead.getUsuario().getEtapaFunil();
-        lead.getUsuario().setEtapaFunil(dto.etapa());
+        Item item = findItemForFunnel(clienteId);
+        EtapaFunil anterior = getStage(item.usuario());
+        item.usuario().setEtapaFunil(dto.etapa());
 
         log.info("Etapa do funil alterada - cliente: {} de: {} para: {} por: {}",
                 clienteId, anterior, dto.etapa(), adminId);
-        return toDetails(lead);
+        return toDetails(item);
     }
 
-    private LeadInstagram findLeadForFunnel(Integer clienteId) {
-        return leadRepository.findByUsuarioId(clienteId)
-                .filter(l -> l.getUsuario().getPerfil() == Perfil.CLIENTE)
-                .filter(l -> ETAPAS_DO_BOARD.contains(l.getUsuario().getEtapaFunil()))
+    private Item findItemForFunnel(Integer clienteId) {
+        Usuario usuario = usuarioRepository.findById(clienteId)
+                .filter(u -> u.getPerfil() == Perfil.CLIENTE)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Oportunidade não encontrada"));
+        LeadInstagram lead = leadRepository.findByUsuarioId(clienteId).orElse(null);
+        return new Item(usuario, lead);
     }
 
-    private FunilCardGetResponseDTO toCard(LeadInstagram lead) {
-        Usuario usuario = lead.getUsuario();
+    private String normalizeOrigin(String origem) {
+        if (origem == null || origem.isBlank() || origem.equalsIgnoreCase("todos")) {
+            return null;
+        }
+        if (origem.equalsIgnoreCase(LeadInstagram.ORIGEM_INSTAGRAM)) {
+            return LeadInstagram.ORIGEM_INSTAGRAM;
+        }
+        if (origem.equalsIgnoreCase(LeadInstagram.ORIGEM_PLATAFORMA)) {
+            return LeadInstagram.ORIGEM_PLATAFORMA;
+        }
+        throw new BusinessValidationException("Origem inválida. Use Todos, Instagram ou Plataforma");
+    }
+
+    private String getOrigin(Item item) {
+        if (item.lead() != null && item.lead().getOrigem() != null) {
+            return item.lead().getOrigem();
+        }
+        String instagramId = item.usuario().getInstagramId();
+        return instagramId != null && !instagramId.isBlank()
+                ? LeadInstagram.ORIGEM_INSTAGRAM
+                : LeadInstagram.ORIGEM_PLATAFORMA;
+    }
+
+    private EtapaFunil getStage(Usuario usuario) {
+        return usuario.getEtapaFunil() == null ? EtapaFunil.NOVO_LEAD : usuario.getEtapaFunil();
+    }
+
+    private LocalDateTime getReceivedAt(Item item) {
+        LeadInstagram lead = item.lead();
+        boolean instagram = LeadInstagram.ORIGEM_INSTAGRAM.equals(getOrigin(item));
+        if (instagram && lead != null && lead.getCriadoEm() != null) {
+            return lead.getCriadoEm();
+        }
+        if (item.usuario().getDataCadastro() != null) {
+            return item.usuario().getDataCadastro();
+        }
+        return lead == null ? null : lead.getCriadoEm();
+    }
+
+    private FunilCardGetResponseDTO toCard(Item item) {
+        Usuario usuario = item.usuario();
+        LeadInstagram lead = item.lead();
         return new FunilCardGetResponseDTO(
                 usuario.getId(),
                 getFullName(usuario),
                 getInitials(usuario),
-                ORIGEM,
-                lead.getCriadoEm(),
+                getOrigin(item),
+                getReceivedAt(item),
                 getProjectType(lead),
-                lead.getOrcamento(),
-                lead.getScore(),
-                lead.getClassificacao());
+                lead == null ? null : lead.getOrcamento(),
+                lead == null ? null : lead.getScore(),
+                lead == null ? null : lead.getClassificacao());
     }
 
-    private FunilDetalheGetResponseDTO toDetails(LeadInstagram lead) {
-        Usuario usuario = lead.getUsuario();
+    private FunilDetalheGetResponseDTO toDetails(Item item) {
+        Usuario usuario = item.usuario();
+        LeadInstagram lead = item.lead();
         return new FunilDetalheGetResponseDTO(
                 usuario.getId(),
                 getFullName(usuario),
                 getInitials(usuario),
                 getProjectType(lead),
-                lead.getOrcamento(),
-                ORIGEM,
-                lead.getCriadoEm(),
-                lead.getScore(),
-                lead.getClassificacao(),
-                usuario.getEtapaFunil());
+                lead == null ? null : lead.getOrcamento(),
+                getOrigin(item),
+                getReceivedAt(item),
+                lead == null ? null : lead.getScore(),
+                lead == null ? null : lead.getClassificacao(),
+                getStage(usuario));
     }
 
     private String getStageTitle(EtapaFunil etapa) {
         return switch (etapa) {
+            case NOVO_LEAD -> "Novo Lead";
+            case EM_QUALIFICACAO -> "Em Qualificação";
             case QUALIFICADO -> "Qualificado";
             case ORCAMENTO_ENVIADO -> "Orçamento Enviado";
             case EM_NEGOCIACAO -> "Em Negociação";
             case FECHADO -> "Fechado";
-            default -> etapa.getValor();
         };
     }
 
     private String getProjectType(LeadInstagram lead) {
+        if (lead == null) {
+            return null;
+        }
         boolean temMovel = lead.getMovel() != null && !lead.getMovel().isBlank();
         boolean temAmbiente = lead.getAmbiente() != null && !lead.getAmbiente().isBlank();
 

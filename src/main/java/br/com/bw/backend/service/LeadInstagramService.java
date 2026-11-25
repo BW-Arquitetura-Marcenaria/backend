@@ -3,6 +3,9 @@ package br.com.bw.backend.service;
 import br.com.bw.backend.dto.request.LeadInstagramPostRequestDTO;
 import br.com.bw.backend.dto.response.LeadInstagramPostResponseDTO;
 import br.com.bw.backend.entity.LeadInstagram;
+import br.com.bw.backend.entity.Usuario;
+import br.com.bw.backend.entity.enums.EtapaFunil;
+import br.com.bw.backend.exception.BusinessValidationException;
 import br.com.bw.backend.repository.LeadInstagramRepository;
 import br.com.bw.backend.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +33,45 @@ public class LeadInstagramService {
 
     @Transactional
     public LeadInstagramPostResponseDTO register(LeadInstagramPostRequestDTO dto) {
+        if (dto.usuarioId() != null) {
+            return registerPlatform(dto);
+        }
+        if (!hasText(dto.instagramId())) {
+            throw new BusinessValidationException("Informe instagramId ou usuarioId");
+        }
+        return registerInstagram(dto);
+    }
+
+    private LeadInstagramPostResponseDTO registerPlatform(LeadInstagramPostRequestDTO dto) {
+        Usuario usuario = usuarioRepository.findById(dto.usuarioId())
+                .orElseThrow(() -> new BusinessValidationException("Usuário não encontrado"));
+
+        LeadInstagram lead = leadRepository.findByUsuarioId(usuario.getId())
+                .orElseGet(() -> {
+                    LeadInstagram novo = new LeadInstagram();
+                    novo.setOrigem(LeadInstagram.ORIGEM_PLATAFORMA);
+                    novo.setUsuario(usuario);
+                    novo.setEmail(usuario.getEmail());
+                    return novo;
+                });
+
+        updateData(lead, dto);
+        leadRepository.save(lead);
+
+        EtapaFunil alvo = Boolean.TRUE.equals(lead.getSaoPaulo())
+                ? EtapaFunil.QUALIFICADO
+                : EtapaFunil.EM_QUALIFICACAO;
+        EtapaFunil atual = usuario.getEtapaFunil();
+        if (atual == null || atual.ordinal() < alvo.ordinal()) {
+            usuario.setEtapaFunil(alvo);
+        }
+
+        log.info("Lead da plataforma atualizado - usuarioId: {}, etapa: {}",
+                usuario.getId(), usuario.getEtapaFunil());
+        return new LeadInstagramPostResponseDTO(true, false, null);
+    }
+
+    private LeadInstagramPostResponseDTO registerInstagram(LeadInstagramPostRequestDTO dto) {
         if (usuarioRepository.existsByInstagramId(dto.instagramId())) {
             log.info("Lead já cadastrado como usuário - instagramId: {}", dto.instagramId());
             return new LeadInstagramPostResponseDTO(true, false, null);
@@ -39,6 +81,7 @@ public class LeadInstagramService {
                 .orElseGet(() -> {
                     LeadInstagram novo = new LeadInstagram();
                     novo.setInstagramId(dto.instagramId());
+                    novo.setOrigem(LeadInstagram.ORIGEM_INSTAGRAM);
                     return novo;
                 });
 

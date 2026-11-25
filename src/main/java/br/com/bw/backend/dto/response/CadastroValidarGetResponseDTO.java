@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 
 public record CadastroValidarGetResponseDTO(
         String nome,
+        String email,
         String ambiente,
         String movel,
         String cor,
