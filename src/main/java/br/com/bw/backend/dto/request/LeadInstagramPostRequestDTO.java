@@ -2,13 +2,14 @@ package br.com.bw.backend.dto.request;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
 
 public record LeadInstagramPostRequestDTO(
-        @NotBlank String instagramId,
+        @Size(max = 20) String origem,
+        @Size(max = 40) String instagramId,
+        Integer usuarioId,
         String crmLeadId,
         String nome,
         Boolean saoPaulo,
