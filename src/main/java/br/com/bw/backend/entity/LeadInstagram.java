@@ -13,17 +13,26 @@ import java.time.LocalDateTime;
 @Setter
 public class LeadInstagram {
 
+    public static final String ORIGEM_INSTAGRAM = "Instagram";
+    public static final String ORIGEM_PLATAFORMA = "Plataforma";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "instagram_id", nullable = false, length = 40)
+    @Column(name = "instagram_id", length = 40)
     private String instagramId;
+
+    @Column(nullable = false, length = 20)
+    private String origem = ORIGEM_INSTAGRAM;
 
     @Column(name = "crm_lead_id", length = 30)
     private String crmLeadId;
 
     private String nome;
+
+    @Column(length = 150)
+    private String email;
 
     @Column(name = "sao_paulo")
     private Boolean saoPaulo = false;
