@@ -69,6 +69,33 @@ public class EmailService {
         send(destinatario, nomeEmpresa, "Convite para administrar a " + nomeEmpresa, html);
     }
 
+    public void sendClientInvite(String destinatario, String nomeCompleto, String link, long validadeHoras) {
+        String nome = HtmlUtils.htmlEscape(nomeCompleto);
+        String empresa = HtmlUtils.htmlEscape(nomeRemetente);
+
+        String html = """
+                <div style="font-family: Arial, sans-serif; max-width: 520px; margin: 0 auto; color: #222;">
+                  <h2 style="color: #5a3e2b;">Bem-vindo(a) à %s</h2>
+                  <p>Olá, %s.</p>
+                  <p>A equipe da <strong>%s</strong> preparou o seu acesso à plataforma.
+                  Complete o seu cadastro para acompanhar o seu projeto e conversar com a gente.</p>
+                  <p style="margin: 28px 0;">
+                    <a href="%s"
+                       style="background: #5a3e2b; color: #fff; padding: 12px 24px;
+                              text-decoration: none; border-radius: 6px; display: inline-block;">
+                      Completar cadastro
+                    </a>
+                  </p>
+                  <p style="font-size: 13px; color: #666;">
+                    O link é pessoal e vale por %d horas.
+                    Se não esperava este e-mail, basta ignorá-lo.
+                  </p>
+                </div>
+                """.formatted(empresa, nome, empresa, link, validadeHoras);
+
+        send(destinatario, nomeRemetente, "Complete o seu cadastro na " + nomeRemetente, html);
+    }
+
     public void sendNewMessageAlertToTeam(String destinatario, String nomeCliente) {
         String cliente = HtmlUtils.htmlEscape(nomeCliente);
         String link = baseUrl + "/admin/chat";
