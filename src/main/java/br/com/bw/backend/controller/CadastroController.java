@@ -1,5 +1,6 @@
 package br.com.bw.backend.controller;
 
+import br.com.bw.backend.dto.request.CadastroDiretoPostRequestDTO;
 import br.com.bw.backend.dto.request.CadastroPostRequestDTO;
 import br.com.bw.backend.dto.response.CadastroGetResponseDTO;
 import br.com.bw.backend.dto.response.CadastroValidarGetResponseDTO;
@@ -23,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("v1/api/cadastro")
 @RequiredArgsConstructor
-@Tag(name = "Cadastro", description = "Cadastro público de novos clientes a partir de um link de convite")
+@Tag(name = "Cadastro", description = "Cadastro público de novos clientes, por link de convite ou direto pela plataforma")
 public class CadastroController {
 
     private final CadastroService service;
@@ -48,11 +49,25 @@ public class CadastroController {
             description = "Conclui o cadastro do cliente a partir de um token válido, definindo senha e dados pessoais.")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Cadastro concluído com sucesso"),
-            @ApiResponse(responseCode = "400", description = "Dados inválidos ou token expirado"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos, e-mail diferente do convite ou token expirado"),
             @ApiResponse(responseCode = "409", description = "E-mail ou CPF já cadastrados")
     })
     public ResponseEntity<CadastroGetResponseDTO> register(
             @Valid @RequestBody CadastroPostRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.register(dto));
+    }
+
+    @PostMapping("/direto")
+    @Operation(
+            summary = "Cadastro direto pela plataforma",
+            description = "Cadastra um cliente que chegou à plataforma sem convite. Ele entra no funil como Novo Lead e segue para a conversa com o assistente.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Cadastro concluído com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos"),
+            @ApiResponse(responseCode = "409", description = "E-mail ou CNPJ já cadastrados")
+    })
+    public ResponseEntity<CadastroGetResponseDTO> registerDirect(
+            @Valid @RequestBody CadastroDiretoPostRequestDTO dto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.registerDirect(dto));
     }
 }
