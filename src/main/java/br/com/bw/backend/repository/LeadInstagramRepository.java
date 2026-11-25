@@ -19,14 +19,16 @@ public interface LeadInstagramRepository extends JpaRepository<LeadInstagram, In
 
     Optional<LeadInstagram> findByUsuarioId(Integer usuarioId);
 
+    Optional<LeadInstagram> findByEmail(String email);
+
+    boolean existsByEmail(String email);
+
     @Query("""
-            SELECT l
-              FROM LeadInstagram l
-              JOIN FETCH l.usuario u
+            SELECT u, l
+              FROM Usuario u
+              LEFT JOIN LeadInstagram l ON l.usuario = u
              WHERE u.perfil = :perfil
-               AND u.etapaFunil IN :etapas
-             ORDER BY l.criadoEm DESC
+             ORDER BY u.id DESC
             """)
-    List<LeadInstagram> findParaFunil(@Param("perfil") Perfil perfil,
-                                      @Param("etapas") Collection<EtapaFunil> etapas);
+    List<Object[]> findClientesComLead(@Param("perfil") Perfil perfil);
 }
