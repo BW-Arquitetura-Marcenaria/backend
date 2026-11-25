@@ -1,5 +1,6 @@
 package br.com.bw.backend.service;
 
+import br.com.bw.backend.dto.request.CadastroDiretoPostRequestDTO;
 import br.com.bw.backend.dto.request.CadastroPostRequestDTO;
 import br.com.bw.backend.dto.response.CadastroGetResponseDTO;
 import br.com.bw.backend.dto.response.CadastroValidarGetResponseDTO;
@@ -47,17 +48,87 @@ public class CadastroService {
     public CadastroGetResponseDTO register(CadastroPostRequestDTO dto) {
         LeadInstagram lead = findValidLead(dto.token());
 
-        String email = dto.email().trim().toLowerCase();
+        String email = normalizeEmail(dto.email());
+        String instagramId = lead.getInstagramId();
+        boolean veioDoInstagram = !isBlank(instagramId);
+
+        if (!isBlank(lead.getEmail()) && !lead.getEmail().equalsIgnoreCase(email)) {
+            log.warn("Cadastro negado - e-mail diferente do convite: {}", email);
+            throw new BusinessValidationException("O e-mail deve ser o mesmo do convite");
+        }
+        if (leadRepository.findByEmail(email)
+                .filter(outro -> !outro.getId().equals(lead.getId()))
+                .isPresent()) {
+            log.warn("Cadastro negado - e-mail pertence a outro lead: {}", email);
+            throw new ConflictException("E-mail já cadastrado");
+        }
+        if (veioDoInstagram && usuarioRepository.existsByInstagramId(instagramId)) {
+            log.warn("Cadastro negado - conta já cadastrada: {}", instagramId);
+            throw new ConflictException("Conta já cadastrada");
+        }
+
+        Usuario usuario = createUser(dto, email,
+                veioDoInstagram ? instagramId : null,
+                defineInitialStage(lead, veioDoInstagram));
+
+        if (veioDoInstagram) {
+            chatbotLogRepository.vincularUsuario(instagramId, usuario);
+        }
+
+        lead.setUsuario(usuario);
+        lead.setEmail(email);
+        lead.setTokenUsadoEm(LocalDateTime.now());
+        leadRepository.save(lead);
+
+        log.info("Cadastro realizado com sucesso - id: {}", usuario.getId());
+        return mapper.toResponse(usuario);
+    }
+
+    /**
+     * Cadastro de quem entrou direto pela plataforma, sem link. Nasce em Novo Lead,
+     * pois a IA ainda não falou com ele.
+     */
+    @Transactional
+    public CadastroGetResponseDTO registerDirect(CadastroDiretoPostRequestDTO form) {
+        String email = normalizeEmail(form.email());
+
+        CadastroPostRequestDTO dto = new CadastroPostRequestDTO(
+                null,
+                form.tipoCliente(),
+                form.nome(),
+                form.sobrenome(),
+                form.cpf(),
+                form.dataNascimento(),
+                form.email(),
+                form.telefone(),
+                form.origemContato(),
+                form.senha(),
+                form.cnpj(),
+                form.razaoSocial(),
+                form.nomeFantasia());
+
+        Usuario usuario = createUser(dto, email, null, EtapaFunil.NOVO_LEAD);
+
+        leadRepository.findByEmail(email)
+                .filter(lead -> lead.getUsuario() == null)
+                .ifPresent(lead -> {
+                    lead.setUsuario(usuario);
+                    lead.setTokenUsadoEm(LocalDateTime.now());
+                    leadRepository.save(lead);
+                    log.info("Convite pendente vinculado ao cadastro direto - lead: {}", lead.getId());
+                });
+
+        log.info("Cadastro direto realizado com sucesso - id: {}", usuario.getId());
+        return mapper.toResponse(usuario);
+    }
+
+    private Usuario createUser(CadastroPostRequestDTO dto, String email, String instagramId, EtapaFunil etapa) {
         boolean pessoaJuridica = dto.tipoCliente() == TipoCliente.PESSOA_JURIDICA;
         String cnpj = onlyDigits(dto.cnpj());
 
         if (usuarioRepository.existsByEmail(email)) {
             log.warn("Cadastro negado - e-mail já cadastrado: {}", email);
             throw new ConflictException("E-mail já cadastrado");
-        }
-        if (usuarioRepository.existsByInstagramId(lead.getInstagramId())) {
-            log.warn("Cadastro negado - conta já cadastrada: {}", lead.getInstagramId());
-            throw new ConflictException("Conta já cadastrada");
         }
         if (pessoaJuridica) {
             if (cnpj.isEmpty()) {
@@ -78,10 +149,8 @@ public class CadastroService {
         usuario.setEmail(email);
         usuario.setCpf(onlyDigits(dto.cpf()));
         usuario.setSenhaHash(passwordEncoder.encode(dto.senha()));
-        usuario.setInstagramId(lead.getInstagramId());
-        usuario.setEtapaFunil(Boolean.TRUE.equals(lead.getSaoPaulo())
-                ? EtapaFunil.QUALIFICADO
-                : EtapaFunil.EM_QUALIFICACAO);
+        usuario.setInstagramId(instagramId);
+        usuario.setEtapaFunil(etapa);
 
         if (pessoaJuridica) {
             Empresa empresa = empresaRepository.save(Empresa.builder()
@@ -94,16 +163,20 @@ public class CadastroService {
             usuario.setTelefone(null);
         }
 
-        usuario = usuarioRepository.save(usuario);
+        return usuarioRepository.save(usuario);
+    }
 
-        chatbotLogRepository.vincularUsuario(lead.getInstagramId(), usuario);
-
-        lead.setUsuario(usuario);
-        lead.setTokenUsadoEm(LocalDateTime.now());
-        leadRepository.save(lead);
-
-        log.info("Cadastro realizado com sucesso - id: {}", usuario.getId());
-        return mapper.toResponse(usuario);
+    /**
+     * Quem veio do Instagram já conversou com a IA: SP segue direto como qualificado,
+     * os demais ficam em qualificação. Quem veio por convite ainda não falou com a IA.
+     */
+    private EtapaFunil defineInitialStage(LeadInstagram lead, boolean veioDoInstagram) {
+        if (!veioDoInstagram) {
+            return EtapaFunil.NOVO_LEAD;
+        }
+        return Boolean.TRUE.equals(lead.getSaoPaulo())
+                ? EtapaFunil.QUALIFICADO
+                : EtapaFunil.EM_QUALIFICACAO;
     }
 
     private LeadInstagram findValidLead(String token) {
@@ -121,6 +194,10 @@ public class CadastroService {
     private ResponseStatusException invalidLink() {
         log.warn("Link de cadastro inválido ou expirado");
         return new ResponseStatusException(HttpStatus.BAD_REQUEST, "Link inválido ou expirado");
+    }
+
+    private String normalizeEmail(String email) {
+        return email.trim().toLowerCase();
     }
 
     private String onlyDigits(String valor) {
